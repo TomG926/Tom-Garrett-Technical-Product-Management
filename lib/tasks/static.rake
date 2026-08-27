@@ -40,13 +40,13 @@ namespace :static do
       puts format("  %-28s -> %-34s %6.1f kB", path, target, html.bytesize / 1024.0)
     end
 
-    # Compiled assets and everything served straight from public/ (screenshots, the
-    # CV, icons, the error pages). Skip the health-check-only bits.
-    %w[assets case-studies].each do |dir|
-      src = Rails.root.join("public", dir)
-      FileUtils.cp_r(src, out) if src.exist?
+    # Everything served straight from public/ — compiled assets, screenshots, the
+    # portrait, the CV, icons, the error pages. Copy by listing the directory rather
+    # than by matching known extensions: an allow-list silently drops whatever it
+    # forgot, which is exactly how the homepage portrait went missing once already.
+    Dir.children(Rails.root.join("public")).each do |entry|
+      FileUtils.cp_r(Rails.root.join("public", entry), out)
     end
-    Dir[Rails.root.join("public", "*.{pdf,svg,png,ico,txt,html}")].each { |f| FileUtils.cp(f, out) }
 
     # Tell GitHub Pages not to run Jekyll over the output — it would strip
     # directories whose names begin with an underscore.
