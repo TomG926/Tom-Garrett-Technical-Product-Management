@@ -1,0 +1,579 @@
+<div class="doc">
+
+  <!-- ============================ COVER ============================ -->
+  <header class="cover">
+    <span class="eyebrow">Product case study &middot; Personal wealth platform</span>
+    <h1>WealthGuard<br>Dashboards</h1>
+    <p class="lede">A household balance sheet for the Irish market — manual entry first, bank feeds and document AI second. Then a final stretch spent proving that every number on it was the right number, because in a finance dashboard a wrong figure looks exactly like a correct one.</p>
+
+    <div class="cover-meta">
+      <div><span class="k">Role</span><span class="v">Product &amp; delivery lead</span></div>
+      <div><span class="k">Timeline</span><span class="v">Oct 2025 &ndash; Aug 2026</span></div>
+      <div><span class="k">Surface</span><span class="v">11 member screens, 13 adviser screens</span></div>
+      <div><span class="k">Status</span><span class="v">Running; Render deploy configured</span></div>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/wealthguard/sec-00-accounts.webp" alt="Financial Overview panel showing account tiles, an assets versus liabilities donut, an income versus expenses donut, net worth of €1,196,101, a debt-to-asset ratio bar and a savings rate bar.">
+      <figcaption><span class="fignum">Fig. 1</span>The Financial Overview, the first thing a member sees. Six account tiles, then the two ratios the rest of the product is built to move: assets against liabilities, and income against expenses. Every figure here is derived — nothing on this panel is typed in directly, which is the source of both the product's value and most of its hard problems.</figcaption>
+    </figure>
+  </header>
+
+  <!-- ============================ 01 ============================ -->
+  <section id="summary">
+    <div class="sec-head"><span class="sec-num">01</span><h2>Executive summary</h2></div>
+
+    <div class="col stack">
+      <p>WealthGuard is a personal financial-management dashboard built for the Irish market. A member records what they own, owe, earn and spend — current accounts, deposits, credit union, properties and mortgages, pensions, investments, insurance policies, other debts and savings goals — and the product turns that into one balance sheet, a retirement outlook, a protection-gap analysis and a month-by-month trend line.</p>
+
+      <p>It is built for an <strong>adviser-led</strong> business rather than pure self-serve. An administrator creates the account, prepares it while it is still a draft, invites the owner only when it is ready, and can step into it through proxy login to work alongside them afterwards. Bank connectivity (TrueLayer) and AI document extraction (GPT-4o vision) exist to remove typing, but the product is fully usable with neither.</p>
+    </div>
+
+    <div class="stats col" style="max-width:var(--wide)">
+      <div><div class="stat-n">22</div><div class="stat-k">Domain tables behind the balance sheet</div></div>
+      <div><div class="stat-n">267</div><div class="stat-k">Commits across 10 months</div></div>
+      <div><div class="stat-n">24</div><div class="stat-k">Screens — 11 member, 13 adviser</div></div>
+      <div><div class="stat-n">91.6<span style="font-size:1.4rem">%</span></div><div class="stat-k">Line coverage, 1,097 tests</div></div>
+    </div>
+
+    <div class="col stack" style="margin-top:2rem">
+      <div class="callout">
+        <span class="eyebrow">The one-line version</span>
+        <p>We shipped a complete household balance sheet quickly, then spent the last phase converting a test suite that reported 31.9% coverage while never once reaching a controller into one that actually exercises the app — and every defect it surfaced was the same species: a number that was quietly, plausibly wrong.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 02 ============================ -->
+  <section id="context">
+    <div class="sec-head"><span class="sec-num">02</span><h2>Context and the problem</h2></div>
+
+    <div class="col stack">
+      <h3>Why build rather than buy</h3>
+      <p>Personal-finance apps are a crowded category. Three requirements pulled this one away from anything off the shelf, and each of them shows up in the data model rather than the marketing.</p>
+    </div>
+
+    <div class="tw" style="margin-top:1.5rem">
+      <table>
+        <thead><tr><th style="width:26%">Requirement</th><th style="width:37%">Why the category struggles</th><th>What we needed instead</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="t">Irish retirement rules</span></td>
+            <td>Consumer tools model 401(k)s and ISAs. Irish planning turns on the Standard Fund Threshold, a 25% tax-free lump sum capped in cash terms, PRSA/ARF structures and a State Pension that starts at 66 — later than most private retirement ages.</td>
+            <td>A retirement engine that projects each pension separately, adds the State Pension only from age 66, and reports headroom against the €2m threshold as a first-class number.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Household, not individual</span></td>
+            <td>Protection and mortgage advice in Ireland is done per person <em>within</em> a household. A single-user data model cannot answer &ldquo;how much life cover does she need&rdquo; when the mortgage is joint.</td>
+            <td>Owner attribution on every financial record, and client profiles for household members who never log in but whose cover, income and needs are still analysed.</td>
+          </tr>
+          <tr>
+            <td><span class="t">An adviser in the loop</span></td>
+            <td>Consumer products assume the person enters their own data. Advisers hold the documents, and an empty dashboard on day one is why people abandon these tools.</td>
+            <td>Draft accounts an adviser can populate before the owner is ever emailed, plus proxy login so support happens inside the account rather than over a screen-share.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Useful with zero integrations</span></td>
+            <td>Open-banking-first products are worthless to anyone whose bank isn't supported, and useless the moment consent lapses.</td>
+            <td>Manual entry as the primary path. Bank sync and document extraction accelerate data entry; they are never a prerequisite for a complete picture.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col stack" style="margin-top:2.5rem">
+      <h3>The three users</h3>
+    </div>
+
+    <div class="tw" style="margin-top:1.25rem">
+      <table>
+        <thead><tr><th style="width:20%">User</th><th style="width:34%">Job to be done</th><th>How the product serves it</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="t">Member</span><span class="s">Account owner</span></td>
+            <td>&ldquo;Show me everything I own and owe in one place, and tell me whether I'm on track.&rdquo;</td>
+            <td>Eleven sections rolling up to one net-worth figure, a financial health score, a goal waterfall, a retirement outlook and a trend line that only shows months it actually recorded.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Household member</span><span class="s">Client profile, no login</span></td>
+            <td>&ldquo;My cover, my income and my retirement age are part of this picture too.&rdquo;</td>
+            <td>Named client records attached to the member's account. Every asset, policy, income and expense carries an owner list; the protection analysis runs per person across the household.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Administrator</span><span class="s">Adviser / practice staff</span></td>
+            <td>&ldquo;Set the account up, get the client in, then work inside it — and know which reviews are coming due.&rdquo;</td>
+            <td>Draft &rarr; activate &rarr; deactivate lifecycle with confirmation screens, proxy login, per-user financial detail, and four CSV-exportable review reports.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================ 03 ============================ -->
+  <section id="product">
+    <div class="sec-head"><span class="sec-num">03</span><h2>What the product does</h2></div>
+
+    <div class="col stack">
+      <p>The capability map below is the whole surface. Everything in it runs in the application; every screenshot in this document was captured from a working local instance seeded with synthetic household data.</p>
+    </div>
+
+    <div class="tw" style="margin-top:1.5rem">
+      <table>
+        <thead><tr><th style="width:22%">Capability</th><th style="width:40%">What it does</th><th>Notable mechanics</th></tr></thead>
+        <tbody>
+          <tr><td><span class="t">Net worth</span></td><td>Rolls savings, investments, pensions and property against mortgages and other liabilities.</td><td>Every component is derived from a single canonical accessor, so no figure on the dashboard is entered twice.</td></tr>
+          <tr><td><span class="t">Goal waterfall</span></td><td>Three prudential disciplines in fixed order, then custom goals in start-date order.</td><td>Goals share one cash pool. A euro assigned to the current-account reserve cannot also fund the emergency fund.</td></tr>
+          <tr><td><span class="t">Retirement outlook</span></td><td>Projects each pension to its own retirement age, adds the State Pension at 66, and shows income to age 90.</td><td>Standard Fund Threshold utilisation, tax-free lump sum and taxable balance are reported alongside the pot.</td></tr>
+          <tr><td><span class="t">Protection analysis</span></td><td>Recommends minimum Life and Serious Illness cover per household person.</td><td>Shows the arithmetic — income replacement, plus lump sums, minus existing cover — and lets every input be overridden per person.</td></tr>
+          <tr><td><span class="t">Property &amp; mortgages</span></td><td>Multiple properties with equity, LTV, rate, structure and review dates.</td><td>Mortgages link to properties; a mortgage can also stand alone, so the picture survives partial data entry.</td></tr>
+          <tr><td><span class="t">Holdings drill-down</span></td><td>Breaks a pension or investment wrapper into individual positions.</td><td>&ldquo;Derived when broken down&rdquo;: once holdings exist they become the wrapper's value, so aggregates never double-count.</td></tr>
+          <tr><td><span class="t">Bank sync</span></td><td>Connects accounts through TrueLayer and pulls balances and transactions.</td><td>Transactions are mapped through ~300 merchant category codes and user-defined rules into income and expenditure records.</td></tr>
+          <tr><td><span class="t">Document extraction</span></td><td>Reads pension and mortgage statements with GPT-4o vision.</td><td>Extraction is proposed, not applied: a confidence score and a review screen stand between the model and the member's data.</td></tr>
+          <tr><td><span class="t">Historical trends</span></td><td>Eight series over 6&ndash;60 months, with deltas and loan-to-value.</td><td>Unobserved months are null, not zero. The chart breaks the line rather than inventing history.</td></tr>
+          <tr><td><span class="t">Adviser console</span></td><td>Account lifecycle, proxy login, org-wide analytics and four review reports.</td><td>Deactivation preserves everything and is reversible; deletion is a separate, deliberate act.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/wealthguard/sec-05-retirement-analysis-section.webp" alt="Retirement outlook screen with State Pension, pension fund today, projected pot and income replacement tiles; an income mix donut; a projected pension growth chart to 2050; Standard Fund Threshold utilisation; estimated income to age 90; and a table of individual pensions.">
+      <figcaption><span class="fignum">Fig. 2</span>The retirement outlook — the densest screen in the product, and deliberately so. Each pension grows on its own schedule to its own retirement age; the State Pension is added only from 66 and never counted as fund value. The Standard Fund Threshold panel exists because the difference between a €1.03m projection and the €2m cap is the single most consequential number an Irish member can be shown, and no consumer tool surfaces it.</figcaption>
+    </figure>
+
+    <figure>
+      <img src="/case-studies/img/wealthguard/sec-03-property-mortgage-portfolio.webp" alt="Property and Mortgage panel with property value, mortgage balance and net property value tiles, an equity versus debt donut, a per-property stacked bar chart and a table of two properties with purchase price, current value, outstanding balance, equity, repayment, rate and loan structure.">
+      <figcaption><span class="fignum">Fig. 3</span>Property and mortgages. The stacked bars are height-by-market-value and split by equity against outstanding debt, so a highly geared investment property reads differently from a nearly-paid family home at a glance. Both charts on this panel were silently broken until August 2026 — see section 07.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================ 04 ============================ -->
+  <section id="flows">
+    <div class="sec-head"><span class="sec-num">04</span><h2>The core flows</h2></div>
+
+    <div class="col stack">
+      <h3>Flow 1 &mdash; The cash waterfall</h3>
+      <p>The most load-bearing product decision in the app is that <strong>goals do not have balances</strong>. A member's cash sits in real accounts; goals are claims on that cash, satisfied in a fixed order.</p>
+    </div>
+
+    <div class="flow" style="margin-top:1.4rem">
+      <div><span class="n">Step 1</span><span class="t">Save 10% of income</span><span class="s">Behaviour goal, measured against recorded regular savings</span></div>
+      <div><span class="n">Step 2</span><span class="t">One month's income</span><span class="s">Reserved out of the cash pool first</span></div>
+      <div><span class="n">Step 3</span><span class="t">Six months' expenses</span><span class="s">Emergency fund takes what remains</span></div>
+      <div><span class="n">Step 4</span><span class="t">Custom goals</span><span class="s">Funded in start-date order from what's left</span></div>
+      <div><span class="n">Then</span><span class="t">Surplus</span><span class="s">Flows to the next goal, never counted twice</span></div>
+    </div>
+
+    <div class="col stack" style="margin-top:1.4rem">
+      <p>The alternative — a target and a balance per goal — is simpler to build and produces a dashboard that lies. The same €20,000 in a deposit account would appear as a fully funded emergency fund <em>and</em> a fully funded house deposit. Making goals compete for one pool costs a more complicated calculation and a harder explanation, and it is the only version that can be trusted.</p>
+      <p>Scheduled custom goals are measured against the amount due <em>by now</em> rather than the full target, so a three-year goal six months in reads &ldquo;on track&rdquo; instead of &ldquo;22% complete&rdquo;.</p>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/wealthguard/sec-01-savings.webp" alt="Savings and Financial Goals panel showing three prudential discipline cards each at 100% progress with target, actual, months of expenses covered and above-target amounts, plus a custom House Improvement goal measured against target to date.">
+      <figcaption><span class="fignum">Fig. 4</span>The waterfall as the member sees it. Each card shows the target, what is actually there, and what flows on to the next goal. The emergency fund card explicitly states its own accounting — &ldquo;cash across all savings accounts after reserving one month of income for the current-account goal&rdquo; — because a progress ring that cannot explain itself is worse than no ring.</figcaption>
+    </figure>
+
+    <div class="col stack" style="margin-top:3rem">
+      <h3>Flow 2 &mdash; An adviser opens an account</h3>
+      <p>Creating an account used to email the person their credentials immediately, which meant the invitation arrived before anyone had put anything in the account. The lifecycle is now four explicit states, and both irreversible-feeling transitions get a full confirmation screen rather than a browser dialog.</p>
+    </div>
+
+    <div class="flow" style="margin-top:1.4rem">
+      <div><span class="n">State 1</span><span class="t">Draft</span><span class="s">Exists, nothing sent, owner cannot sign in</span></div>
+      <div><span class="n">State 2</span><span class="t">Prepared</span><span class="s">Adviser builds it out via proxy login</span></div>
+      <div><span class="n">State 3</span><span class="t">Active</span><span class="s">Activation opens access and sends the invitation together</span></div>
+      <div><span class="n">State 4</span><span class="t">Deactivated</span><span class="s">Access revoked, data intact, reversible in one click</span></div>
+    </div>
+
+    <div class="col stack" style="margin-top:1.4rem">
+      <p>Deactivated is deliberately <em>not</em> a return to draft. A draft has never been invited; a deactivated account belongs to someone who already has a password. So restoring access sends nothing, where activating a draft always sends an invitation. Password resets are suppressed in both states — including from the public &ldquo;forgot password&rdquo; form, which would otherwise be a way back in for someone an adviser had just shut out.</p>
+      <p>One detail worth the extra code: the status change commits <em>before</em> the email is sent. If mail delivery fails the screen says &ldquo;active, but the invitation could not be sent&rdquo; and points at the retry, instead of implying the whole activation failed.</p>
+    </div>
+
+    <div class="fig-pair">
+      <figure>
+        <img src="/case-studies/img/wealthguard/crop-confirm-activation.webp" alt="Activate account confirmation screen naming the person, the invitation email address, when the draft was created and what data is prepared, three bullets on what happens, and a warning that the invitation cannot be recalled.">
+        <figcaption><span class="fignum">Fig. 5</span>Activation names the exact address that will be emailed and warns that it cannot be recalled.</figcaption>
+      </figure>
+      <figure>
+        <img src="/case-studies/img/wealthguard/crop-confirm-deactivation.webp" alt="Revoke access confirmation screen laid out as What stops beside What is kept, with a note that the action is reversible and silent, and an optional admin-only reason field.">
+        <figcaption><span class="fignum">Fig. 6</span>Revoking access is laid out as &ldquo;what stops&rdquo; beside &ldquo;what is kept&rdquo;, and leads with the fact that it is reversible and silent.</figcaption>
+      </figure>
+    </div>
+
+    <div class="col stack" style="margin-top:3rem">
+      <h3>Flow 3 &mdash; Data in without typing</h3>
+      <p>Two pipelines exist to reduce data entry, and both are designed to fail into a state a person can fix rather than into silence.</p>
+    </div>
+
+    <div class="flow" style="margin-top:1.4rem">
+      <div><span class="n">Bank</span><span class="t">Consent</span><span class="s">TrueLayer OAuth, state token cached for ten minutes</span></div>
+      <div><span class="n">&rarr;</span><span class="t">Sync</span><span class="s">Accounts and 30 days of transactions, each attempt logged</span></div>
+      <div><span class="n">&rarr;</span><span class="t">Classify</span><span class="s">Merchant category code, then user rules by priority</span></div>
+      <div><span class="n">&rarr;</span><span class="t">Convert</span><span class="s">Becomes an income or expenditure record with a frequency</span></div>
+    </div>
+
+    <div class="flow" style="margin-top:1rem">
+      <div><span class="n">Doc</span><span class="t">Upload</span><span class="s">Pension or mortgage statement into the vault</span></div>
+      <div><span class="n">&rarr;</span><span class="t">Extract</span><span class="s">Pages rendered to images, read by GPT-4o vision</span></div>
+      <div><span class="n">&rarr;</span><span class="t">Score</span><span class="s">Confidence recorded; live status pushed over the socket</span></div>
+      <div><span class="n">&rarr;</span><span class="t">Review</span><span class="s">Member approves or edits before anything is written</span></div>
+    </div>
+
+    <div class="col stack" style="margin-top:1.4rem">
+      <p>The review step is the product decision. An extraction pipeline that writes straight into a member's pension record is faster and occasionally catastrophic — a misread provider or a transposed fund value propagates into net worth, the retirement projection and the trend history in one move. Proposing rather than applying costs a screen and keeps the member as the final authority over their own figures.</p>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/wealthguard/crop-expenses.webp" alt="Income and Expenses page with total income, total expenses and net flow tiles above a unified transaction table combining manual income, mortgage payments, insurance premiums and utilities, each row tagged with owner, source and type.">
+      <figcaption><span class="fignum">Fig. 7</span>One ledger, four sources. Manual entries, bank transactions, mortgage repayments and insurance premiums are merged into a single stream, each row carrying who it belongs to and where it came from.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================ 05 ============================ -->
+  <section id="console">
+    <div class="sec-head"><span class="sec-num">05</span><h2>The adviser console</h2></div>
+
+    <div class="col stack">
+      <p>Six screens, each answering one question a practice actually asks. The console is where the product stops being a personal-finance app and starts being a book of business.</p>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/wealthguard/crop-admin-users.webp" alt="User Management screen with search, role filter and sort controls above a table of users showing net worth, health score, data completeness percentage, counts of accounts, mortgages, insurance and goals, and per-row View, Edit, Proxy and Delete actions. Some rows carry Draft, Deactivated or Admin badges.">
+      <figcaption><span class="fignum">Fig. 8</span>&ldquo;Who is on the books, and whose file is thin?&rdquo; Net worth, health score and data completeness sit beside the counts that explain them, so an adviser can see at a glance that a 13%-complete account has no accounts, no mortgages and no policies recorded. Lifecycle state is a badge, not a separate screen.</figcaption>
+    </figure>
+
+    <figure>
+      <img src="/case-studies/img/wealthguard/crop-admin-user-show.webp" alt="Single user detail page for James O'Sullivan showing net worth, health score, monthly income and data completeness, a financial overview, account details, personal information and linked clients, with Send Password Reset, Proxy Login, Edit User and Deactivate actions.">
+      <figcaption><span class="fignum">Fig. 9</span>The account file. The toolbar is ordered by how often it is used and how much it costs to be wrong: password reset first, proxy login second, deactivate last and quiet — and hidden entirely on the adviser's own account, because locking yourself out of the admin panel is never the intent.</figcaption>
+    </figure>
+
+    <figure>
+      <img src="/case-studies/img/wealthguard/crop-admin-analytics.webp" alt="Analytics dashboard showing total users, monthly revenue of €20, portfolio value, a 6.3% conversion rate, financial health distribution bars and subscription status with one paid subscriber, nine active trials and six expired trials.">
+      <figcaption><span class="fignum">Fig. 10</span>Org-wide analytics. Trial and subscription state sit beside the health distribution, because the commercial question and the advice question are asked in the same review meeting. Figures shown are from a local instance seeded with synthetic households — see the note at the end of section 10.</figcaption>
+    </figure>
+
+    <figure>
+      <img src="/case-studies/img/wealthguard/crop-admin-mortgage-reviews.webp" alt="Mortgage reviews report grouped by urgency with counts of reviews due within 30 days, 90 days and later, and a table of mortgages by user with review dates.">
+      <figcaption><span class="fignum">Fig. 11</span>Review reports are the commercial engine of an advice practice: mortgage rate reviews, insurance renewals, subscription status and high-net-worth segmentation, each bucketed by urgency and exportable to CSV. This is the only part of the product that generates outbound work rather than answering inbound questions.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================ 06 ============================ -->
+  <section id="hard-part">
+    <div class="sec-head"><span class="sec-num">06</span><h2>The hard part: one number, many sources of truth</h2></div>
+
+    <div class="col stack">
+      <p>A telephony product fails loudly — the caller hears dead air. A finance dashboard fails silently. A net-worth figure that is €40,000 too high looks exactly like one that is correct, renders in the same font, and is believed.</p>
+      <p>Almost every number in this product can be sourced more than one way, because members enter data in whatever order suits them. A pension might be a full pension record or just an account tagged &ldquo;Current Pension Fund&rdquo;. A mortgage balance might be on the mortgage, or only on the property. An investment might be one figure or a set of holdings. The product has to pick one source, every time, and never add two together.</p>
+    </div>
+
+    <div class="tw" style="margin-top:1.75rem">
+      <table>
+        <thead><tr><th style="width:24%">Collision</th><th style="width:38%">What a naive read produces</th><th>The rule we settled on</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="t">Pension fund</span><span class="s">Plan vs account</span></td>
+            <td>Someone with both a pension record and a pension-tagged account has their retirement savings counted twice.</td>
+            <td>The plan wins when it holds a value; the account is the fallback. Matured pension accounts are always added, because they are a different thing.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Mortgage balance</span><span class="s">Three columns, one property</span></td>
+            <td>Outstanding balance, remaining balance and the property's own mortgage field disagree, and liabilities move depending on which screen you are on.</td>
+            <td>One accessor, used everywhere: current outstanding if present, else the amortised remainder; properties are consulted only when no mortgage record exists at all.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Investment goal</span><span class="s">Type vs tag</span></td>
+            <td>Investment-type accounts and Investments-tagged accounts were summed separately. The sets overlap, because investment accounts are auto-tagged — so the goal read double.</td>
+            <td>Union the two sets before summing. Fixed August 2026.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Wrapper vs holdings</span><span class="s">Drill-down</span></td>
+            <td>Break a €344,500 PRSA into three funds and either the wrapper or the funds get counted — or both.</td>
+            <td>&ldquo;Derived when broken down&rdquo;: holdings become the wrapper's authoritative value on save, so every existing aggregate stays correct with no second entry.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Goal progress</span><span class="s">Shared cash</span></td>
+            <td>The same deposit balance satisfies three goals at once and the dashboard congratulates the member three times.</td>
+            <td>One cash pool, consumed in priority order. Later goals only ever see what earlier goals left.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Trend history</span><span class="s">Recorded vs assumed</span></td>
+            <td>Backfilling earlier months from today's balances produces a chart that shows a flat, confident history nobody ever measured.</td>
+            <td>Snapshots are recorded, never invented. Months with no observation are null and break the line; the page says so in plain words.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/wealthguard/crop-trends.webp" alt="Historical Trends page with net worth, total assets, total liabilities and pension fund tiles, an amber banner saying balances were last updated three months ago, and net worth and account balance charts where the line only has markers on recorded months.">
+      <figcaption><span class="fignum">Fig. 12</span>Honest history, rendered. Dotted markers show months with a real recorded balance; between them the line holds the last known value rather than interpolating. The amber banner is the product taking responsibility for its own staleness — &ldquo;your balances were last updated 3 months ago&rdquo; — instead of drawing a confident flat line and letting the member assume nothing changed.</figcaption>
+    </figure>
+
+    <div class="col stack" style="margin-top:2.25rem">
+      <div class="callout">
+        <span class="eyebrow">The transferable lesson</span>
+        <p>None of these ever arrived as a bug report. They arrive as &ldquo;that number looks a bit high&rdquo;, or more often as nothing at all. A product whose failure mode is <em>plausible</em> output cannot be validated by using it — which is why the instrumentation work in section 07 was not overhead, it was the only way to know whether any of this was true.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 07 ============================ -->
+  <section id="deep-dive">
+    <div class="sec-head"><span class="sec-num">07</span><h2>Deep dive: the suite that tested nothing</h2></div>
+
+    <div class="col stack">
+      <p>In August 2026 the project had 248 tests, a green build, and 31.9% line coverage. It turned out that <strong>no integration test had ever reached a controller.</strong> Three stacked problems, each masked by assertions of the form <code class="mono" style="font-size:.85em">assert_includes [200, 302, 403], response.status</code> — which passes whatever happens.</p>
+    </div>
+
+    <div class="tw" style="margin-top:1.5rem">
+      <table>
+        <thead><tr><th style="width:30%">Blocker</th><th style="width:34%">What actually happened to the request</th><th>Why nobody noticed</th></tr></thead>
+        <tbody>
+          <tr><td><span class="t">Host authorization</span></td><td>The app pushed onto <code class="mono" style="font-size:.85em">config.hosts</code>, which switches host checking on in every environment. Test requests arrive as <code class="mono" style="font-size:.85em">www.example.com</code> and were rejected before routing.</td><td>403 was in the accepted list.</td></tr>
+          <tr><td><span class="t">A broken callback filter</span></td><td>A subscription concern named subscriptions-only actions in its <code class="mono" style="font-size:.85em">:except</code> list while being mixed into every controller, so every other controller raised and 404'd.</td><td>Never asserted on.</td></tr>
+          <tr><td><span class="t">Lazy route loading</span></td><td>Rails 8 draws routes lazily and Devise fills its mappings as a side effect, so signing in before touching a route helper died with &ldquo;could not find a valid mapping&rdquo;.</td><td>The failure happened in setup, not the assertion.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col stack" style="margin-top:2.25rem">
+      <h3>What the rebuild found</h3>
+      <p>Writing assertions that can actually fail turned up defects across three severities. None had been reported by a user; several would have taken the application down on its next deploy.</p>
+    </div>
+
+    <div class="tw" style="margin-top:1.5rem">
+      <table>
+        <thead><tr><th style="width:16%">Severity</th><th style="width:36%">Defect</th><th>Consequence</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill crit">Boot</span></td><td>Two files declared constants that did not match their filenames, and a WebSocket channel inherited from a base class that did not exist.</td><td>Production eager-loads. Both were fatal at startup, and the app had simply never been booted with eager loading on.</td></tr>
+          <tr><td><span class="pill crit">Boot</span></td><td>The Stripe webhook controller skipped a callback that was never registered.</td><td>The class raised while loading, so every webhook delivery failed.</td></tr>
+          <tr><td><span class="pill warn">Silent</span></td><td>Two methods called from other objects were private, and a transaction predicate did not exist. Both errors were swallowed per transaction.</td><td><strong>No bank transaction had ever been converted into an income or expenditure record.</strong> The headline feature of the bank integration did nothing, quietly, for months.</td></tr>
+          <tr><td><span class="pill warn">Silent</span></td><td>The Investments goal summed two overlapping account sets.</td><td>Progress toward the investment goal read roughly double.</td></tr>
+          <tr><td><span class="pill">Broken</span></td><td>A singular page route claimed the <code class="mono" style="font-size:.85em">property</code> helper name, so the resource routes could not name their own members.</td><td>The delete button on a property went nowhere.</td></tr>
+          <tr><td><span class="pill">Broken</span></td><td>Pagination had been configured with an option the library renamed a major version earlier.</td><td>Every per-page setting in the app was inert.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col stack" style="margin-top:2rem">
+      <p class="note"><strong>Result:</strong> 248 runs at 31.9% coverage became 1,097 runs and 3,519 assertions at 91.6%, verified order-independent across five seeds, with outbound HTTP blocked so no test can reach TrueLayer, OpenAI or Stripe.</p>
+    </div>
+
+    <div class="col stack" style="margin-top:2.5rem">
+      <h3>The security sweep</h3>
+      <p>A Brakeman scan and a manual review of authentication, authorisation, injection surfaces and uploads ran in the same window. It found real work to do — secrets management, output escaping in one helper, webhook verification, and two query surfaces that were safe as written but a refactor away from not being. All of it was remediated in the same phase, and the specifics stay with the client rather than in a portfolio piece.</p>
+      <p>The transferable part is the sequencing. The sweep ran <em>after</em> the test rebuild, and that was the wrong order: several findings were in code paths the old suite had never executed, so an honest suite would have surfaced them first. On a product holding financial records, the security review belongs at the start of a correctness phase, not the end.</p>
+    </div>
+
+    <div class="col stack" style="margin-top:2.5rem">
+      <h3>The chart that only appeared once you had two of something</h3>
+      <p>The last find of the phase is the clearest illustration of why duplication is a product risk and not a style preference. Four separate charts were reported blank. All four shared one cause, and it was in the geometry rather than the data.</p>
+      <p>A donut slice covering the entire circle produces an arc whose start and end points are identical — and the SVG specification says such an arc is dropped. So any chart with exactly <em>one</em> category drew nothing at all: income with no expenses, assets with no debts, equity with no mortgage, a portfolio holding a single fund. Adding a €1 expense split it into two slices and the chart reappeared, which is why the workaround looked like magic.</p>
+      <p>The arc maths existed as <strong>eight near-identical copies across seven components</strong>. One bug, written once, shipped eight times. They now share a single module, and a test fails if a local copy reappears.</p>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/wealthguard/sec-02-investments.webp" alt="Investments panel showing portfolio split donut, estimated future value chart with a flat line and a note to add growth rates, an investments table grouped by theme, and an asset allocation donut rendered as a single complete ring at 100% Multi-Asset.">
+      <figcaption><span class="fignum">Fig. 13</span>Proof of the fix, bottom left: an asset allocation of 100% Multi-Asset renders as a complete ring. Before August 2026 that donut was empty. Note also the projection chart's empty state — &ldquo;add a growth rate to each investment to see a projection — the line is flat until then&rdquo; — which tells the member why the chart is boring rather than letting them conclude the product is.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================ 08 ============================ -->
+  <section id="decisions">
+    <div class="sec-head"><span class="sec-num">08</span><h2>Decisions and trade-offs</h2></div>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:21%">Decision</th><th style="width:26%">Why</th><th style="width:26%">What it cost</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="t">Manual entry as the primary path</span></td>
+            <td>A dashboard that needs an integration to be useful is useless to most of the market on day one.</td>
+            <td>A great deal of form and modal work, and eleven screens that all have to handle partial data gracefully.</td>
+            <td><span class="pill good">Right call</span><span class="s">The product is complete without a single external service configured.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">One canonical accessor per concept</span></td>
+            <td>Every duplicate calculation is a future disagreement between two screens.</td>
+            <td>The user model grew to 1,329 lines and now owns net worth, income, goals, the prudential waterfall and transaction categorisation.</td>
+            <td><span class="pill warn">Right idea, wrong home</span><span class="s">The rule is correct; the class should have been several.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Goals share one cash pool</span></td>
+            <td>Per-goal balances let the same euro fund three goals and produce a dashboard that flatters.</td>
+            <td>Progress is derived, so a member cannot point at which account funds which goal.</td>
+            <td><span class="pill good">Right call</span><span class="s">The only version that can be trusted.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Owner attribution as a JSON column</span></td>
+            <td>Household ownership had to reach ten record types quickly, without ten join tables.</td>
+            <td>An identical fifteen-line accessor copy-pasted into ten models, and owner names with no referential link to the client records they name.</td>
+            <td><span class="pill warn">Fast, now due</span><span class="s">Exactly the duplication pattern that produced the donut bug.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Server-rendered pages, sprinkled interactivity</span></td>
+            <td>A small team ships a 17-screen product far faster in ERB than in a single-page app.</td>
+            <td>126 templates, some very large, and chart logic that drifted into eight copies before anyone noticed.</td>
+            <td><span class="pill good">Right for the team</span><span class="s">Shared primitives were needed a year sooner.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Never fabricate history</span></td>
+            <td>A trend chart is an argument about the past. Inventing months makes it a false one.</td>
+            <td>New members see almost no chart, and the page has to explain its own emptiness.</td>
+            <td><span class="pill good">Right call</span><span class="s">Honesty over a chart that looks better and means less.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Proxy login for advisers</span></td>
+            <td>Support inside the account beats support over a screen-share, and preparing a draft account requires it.</td>
+            <td>An account a member did not open can be entered by staff, which is a capability that has to be time-boxed and recorded to be acceptable. Sessions expire after eight hours and every entry and exit is logged.</td>
+            <td><span class="pill warn">Necessary, keep tightening</span><span class="s">Entry and exit belong in the product's own audit trail, not only the application log.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Build trials and billing before charging</span></td>
+            <td>The practice wanted the commercial machinery ready before it committed to a price, so trials, Stripe and MRR reporting were built ahead of the decision.</td>
+            <td>Machinery that runs ahead of the decision it serves. Whether to charge, and whom, stayed a code-level concern instead of a setting the business could turn.</td>
+            <td><span class="pill crit">Wrong mechanism</span><span class="s">Right to build it early; wrong to leave the commercial switch in code. See section 10, item 1.</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================ 09 ============================ -->
+  <section id="delivery">
+    <div class="sec-head"><span class="sec-num">09</span><h2>Delivery record</h2></div>
+
+    <div class="stats" style="margin-top:0">
+      <div><div class="stat-n">10<span style="font-size:1.4rem"> mo</span></div><div class="stat-k">Oct 2025 to Aug 2026</div></div>
+      <div><div class="stat-n">62</div><div class="stat-k">Migrations against a live schema</div></div>
+      <div><div class="stat-n">80</div><div class="stat-k">Test files across models, services, jobs and every controller</div></div>
+      <div><div class="stat-n">126</div><div class="stat-k">View templates</div></div>
+    </div>
+
+    <div class="tw" style="margin-top:2rem">
+      <table>
+        <thead><tr><th style="width:20%">Phase</th><th style="width:16%">When</th><th>Focus</th></tr></thead>
+        <tbody>
+          <tr><td><span class="t">Foundation</span></td><td class="num">Oct 2025</td><td>Authentication, accounts, savings goals, Irish mortgages and insurance covers, expenditures and the first retirement panel. 209 commits in a single month — the whole skeleton.</td></tr>
+          <tr><td><span class="t">Integrations</span></td><td class="num">Oct&ndash;Nov 2025</td><td>TrueLayer open banking, document upload and AI extraction, Stripe subscriptions, audit logging, admin console and reports.</td></tr>
+          <tr><td><span class="t">Refinement</span></td><td class="num">Jan&ndash;May 2026</td><td>Savings-goal overhaul, household owners across every module, full-screen modals, responsive layout, side navigation, dark mode.</td></tr>
+          <tr><td><span class="t">Depth</span></td><td class="num">Jun&ndash;Jul 2026</td><td>Holdings drill-down inside pensions and investments, the trends overhaul with net worth and LTV, protection needs analysis.</td></tr>
+          <tr><td><span class="t">Proof</span></td><td class="num">Aug 2026</td><td>Test suite rebuild, the defects it surfaced, the security sweep, repository clean-up, the account lifecycle, and the chart geometry fix.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col stack" style="margin-top:2rem">
+      <p>The shape of that timeline is itself a finding. Features dominated the first nine months; correctness dominated the last one. That ordering is normal and, up to a point, correct — you cannot know which parts of a derived-data product are wrong until there is enough data to be wrong about. What is <em>not</em> defensible is that it took a deliberate audit rather than ordinary use to discover that the bank integration had never once produced a record. A future project would budget for the proof phase explicitly, and would run a thin version of it every month rather than one thick version at the end.</p>
+    </div>
+  </section>
+
+  <!-- ============================ 10 ============================ -->
+  <section id="next">
+    <div class="sec-head"><span class="sec-num">10</span><h2>What I would do next</h2></div>
+
+    <div class="col stack">
+      <p>Ranked by risk removed per unit of effort. The first three are product and platform decisions the build deferred rather than resolved; the last four are the duplication and dead-code debt the correctness phase surfaced but did not have time to clear.</p>
+    </div>
+
+    <div class="tw" style="margin-top:1.75rem">
+      <table>
+        <thead><tr><th style="width:5%">#</th><th style="width:30%">Action</th><th style="width:44%">Why it matters</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="rank">1</td>
+            <td><span class="t">Move the subscription decision into configuration</span></td>
+            <td>Trials, Stripe, subscription records and MRR reporting are all built. What is still a code-level concern is <em>when and whom to charge</em> — a commercial decision the practice should be able to change without a deploy. It belongs behind a setting, with the analytics in figure 10 as the read-out.</td>
+            <td><span class="pill warn">Policy</span></td>
+          </tr>
+          <tr>
+            <td class="rank">2</td>
+            <td><span class="t">Give the background work its own process</span></td>
+            <td>Document extraction and bank sync are the two genuinely long-running jobs, and both currently share the web process. Splitting them out is what lets each retry on its own, survive a deploy mid-run, and carry the recurring trend-snapshot schedule rather than relying on a page view to record the month.</td>
+            <td><span class="pill warn">Scale</span></td>
+          </tr>
+          <tr>
+            <td class="rank">3</td>
+            <td><span class="t">Surface data export and erasure to the member</span></td>
+            <td>The export and erasure service is written and tested, and the retention policies are encoded in it. What it needs is the member-facing route and button, so a subject-access or deletion request is self-serve rather than an administrator's manual task.</td>
+            <td><span class="pill warn">Compliance</span></td>
+          </tr>
+          <tr>
+            <td class="rank">4</td>
+            <td><span class="t">Extract the household-owner accessor</span></td>
+            <td>The same fifteen lines are copied into ten models. This is precisely the duplication that let one arc bug reach four charts; the fix is a concern and an afternoon.</td>
+            <td><span class="pill">Hygiene</span></td>
+          </tr>
+          <tr>
+            <td class="rank">5</td>
+            <td><span class="t">Resolve the duplicated category codes</span></td>
+            <td>The merchant-code map declares several codes twice. The language keeps the last one silently, so telecoms and digital media land under Subscriptions and the earlier Utilities and Entertainment intent is dead code. A taxonomy should be resolved by a decision, not by line order.</td>
+            <td><span class="pill">Quality</span></td>
+          </tr>
+          <tr>
+            <td class="rank">6</td>
+            <td><span class="t">Make the health check check something</span></td>
+            <td>The dependency check returns a hard-coded &ldquo;healthy&rdquo;. The single failing test in the suite asserts that Redis is <em>unreachable</em> — an assumption about the machine rather than a statement about behaviour, which is why it passes in CI and fails on a developer laptop with Redis running.</td>
+            <td><span class="pill">Quality</span></td>
+          </tr>
+          <tr>
+            <td class="rank">7</td>
+            <td><span class="t">Remove the flows that no longer exist</span></td>
+            <td>Onboarding has five routes, a controller, a column and a twenty-entry path allow-list guarding a tour whose views were deleted; the gate now silently marks everyone complete. An admin route still exists whose action does nothing but flash &ldquo;user status updated&rdquo;, left over from before the real lifecycle was built.</td>
+            <td><span class="pill">Hygiene</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col stack" style="margin-top:2.5rem">
+      <div class="callout warn">
+        <span class="eyebrow">A note on outcome metrics</span>
+        <p>This case study quotes no client figures — no member counts, portfolio values, retention or revenue. The product is in use by an advice practice and those numbers exist; they belong to the practice and its clients rather than in a portfolio piece, and every screenshot here is a local instance seeded with synthetic households for the same reason. Everything this document does quote — table counts, coverage, migrations, the defects in section 07 — is a property of the repository or a local run, and can be checked. Inventing the other kind would undermine the one thing this document is actually arguing, which is that a product built on derived numbers is only as good as its willingness to be honest about them.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ APPENDIX ============================ -->
+  <section class="appendix" id="appendix">
+    <div class="sec-head"><span class="sec-num">A</span><h2>Appendix</h2></div>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:22%">Layer</th><th>Choice</th></tr></thead>
+        <tbody>
+          <tr><td><span class="t">Application</span></td><td>Ruby on Rails 8.0.3 on Ruby 3.2, Puma. SQLite in development, PostgreSQL in production.</td></tr>
+          <tr><td><span class="t">Authentication</span></td><td>Devise with Google OAuth2, Rack::Attack throttles on sign-in, password reset and registration, and a separate account-status gate for drafts and deactivated accounts.</td></tr>
+          <tr><td><span class="t">Open banking</span></td><td>TrueLayer — OAuth consent, account and transaction sync, and ~300 merchant category codes mapped to the app's own income and expenditure taxonomy.</td></tr>
+          <tr><td><span class="t">Document AI</span></td><td>OpenAI GPT-4o vision. Pages rasterised, read per page, merged, scored, and held for human review before write-back.</td></tr>
+          <tr><td><span class="t">Billing</span></td><td>Stripe Checkout, customer portal and signed webhooks; trial periods on the user record.</td></tr>
+          <tr><td><span class="t">Front end</span></td><td>Server-rendered ERB with Tailwind, Stimulus and React 19 components bundled by Shakapacker; charts hand-drawn as SVG through a shared geometry module.</td></tr>
+          <tr><td><span class="t">Real time</span></td><td>Action Cable for document-processing status.</td></tr>
+          <tr><td><span class="t">Quality</span></td><td>Minitest with FactoryBot and Faker, SimpleCov, WebMock with outbound connections disabled, Brakeman, RuboCop, and a boot-integrity test that eager-loads the whole application.</td></tr>
+          <tr><td><span class="t">Deployment</span></td><td>Docker image deployed to Render; Kamal configuration also present.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tw" style="margin-top:2rem">
+      <table>
+        <thead><tr><th style="width:40%">Screen</th><th>Shown in</th></tr></thead>
+        <tbody>
+          <tr><td>Financial overview</td><td class="num">Cover</td></tr>
+          <tr><td>Retirement outlook &middot; Property &amp; mortgages</td><td class="num">Section 03</td></tr>
+          <tr><td>Savings &amp; goals &middot; Activation &middot; Deactivation &middot; Income &amp; expenses</td><td class="num">Section 04</td></tr>
+          <tr><td>User management &middot; Account file &middot; Analytics &middot; Mortgage reviews</td><td class="num">Section 05</td></tr>
+          <tr><td>Historical trends</td><td class="num">Section 06</td></tr>
+          <tr><td>Investments &amp; asset allocation</td><td class="num">Section 07</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col stack" style="margin-top:2.5rem">
+      <p class="note">Screenshots were captured from a locally running instance on a working branch, populated with synthetic household data. All names, addresses, policy numbers and balances shown are fictitious. Technical claims throughout are drawn from the application source, its schema, its commit history and a full run of its test suite rather than from recollection; where the document states that something does not work, that was verified in the code as committed.</p>
+    </div>
+  </section>
+
+</div>

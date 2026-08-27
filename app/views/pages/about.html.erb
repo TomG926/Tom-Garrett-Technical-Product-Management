@@ -1,0 +1,235 @@
+<% content_for :title, "About" %>
+<% content_for :description, "Tom Garrett — Director of Product Engineering at DepositCloud, founder of DocuDynamics, product adviser to early-stage Irish companies. Ten years across design, code and product." %>
+
+<%# ── Intro ──────────────────────────────────────────────────────────────── %>
+<section class="mx-auto max-w-6xl px-6 pt-20 pb-16 sm:px-8 sm:pt-28">
+  <p class="eyebrow">About</p>
+
+  <div class="mt-6 grid gap-12 lg:grid-cols-[1.5fr_1fr] lg:gap-20">
+    <div>
+      <h1 class="max-w-3xl font-display text-[2.4rem] font-semibold leading-[1.05] tracking-tight text-ink-950 sm:text-[3.4rem]">
+        Ten years across design, code and product
+      </h1>
+
+      <div class="mt-8 max-w-2xl space-y-4 text-[1.06rem] leading-relaxed text-ink-500">
+        <p>
+          I'm a product-led engineering leader. I currently lead product delivery at
+          <span class="font-medium text-ink-900">DepositCloud</span>, a regulated US
+          rental-payments platform serving 250,000+ customers, where I own roadmap execution
+          across three applications with a distributed team of eight engineers.
+        </p>
+        <p>
+          I founded <span class="font-medium text-ink-900">DocuDynamics</span> and took it from
+          idea to funded MVP in five months, and I advise early-stage Irish companies on product
+          engineering.
+        </p>
+        <p>
+          I work the full cycle: discovery and user research, prototyping, experimentation,
+          and shipping. Doing the design and the code alongside the roadmap means the trade-offs
+          are visible when a decision gets made, rather than after it.
+        </p>
+      </div>
+
+      <div class="mt-9 flex flex-wrap gap-3">
+        <a href="<%= contact[:cv] %>" download
+           class="inline-flex items-center gap-2 rounded-full bg-ink-950 px-5 py-2.5 text-[0.92rem] font-medium text-paper transition hover:bg-ink-700">
+          Download CV
+          <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+            <path d="M10 3.5v10m0 0 3.5-3.5M10 13.5 6.5 10M4 16.5h12" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+        <a href="mailto:<%= contact[:email] %>"
+           class="inline-flex items-center gap-2 rounded-full border border-ink-200 px-5 py-2.5 text-[0.92rem] font-medium text-ink-900 transition hover:border-ink-950">
+          <%= contact[:email] %>
+        </a>
+      </div>
+    </div>
+
+    <aside class="lg:pt-3">
+      <p class="eyebrow">Details</p>
+      <dl class="mt-4 space-y-4 text-[0.93rem]">
+        <div><dt class="text-ink-400">Based</dt><dd class="text-ink-900"><%= contact[:location] %></dd></div>
+        <div><dt class="text-ink-400">Currently</dt><dd class="text-ink-900">Director of Product Engineering, DepositCloud</dd></div>
+        <div><dt class="text-ink-400">Also</dt><dd class="text-ink-900">Product consultant &amp; adviser, 2024 – present</dd></div>
+        <div>
+          <dt class="text-ink-400">Links</dt>
+          <dd class="space-y-1">
+            <a class="link-underline block text-ink-900" href="<%= contact[:linkedin] %>" rel="noopener"><%= contact[:linkedin_label] %></a>
+          </dd>
+        </div>
+      </dl>
+    </aside>
+  </div>
+</section>
+
+<%# ── Skillset ───────────────────────────────────────────────────────────── %>
+<section class="border-t border-ink-100 bg-panel">
+  <div class="mx-auto max-w-6xl px-6 py-20 sm:px-8">
+    <p class="eyebrow">Product skillset</p>
+    <div class="mt-10 grid gap-x-12 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+      <% [
+           ["Discovery &amp; validation", "User research, UX prototyping, Hotjar and session analysis, data-led decisions on which features to kill and which to scale."],
+           ["Experimentation &amp; rollout", "Feature flags (Flipper), staged releases, analytics instrumentation, measurable launch criteria defined before launch."],
+           ["Delivery &amp; roadmapping", "Agile planning, multi-phase initiative scoping, cross-timezone execution, stakeholder management."],
+           ["Regulated-domain product", "US FinTech and PropTech, SOC 2 Type I, security and compliance treated as product constraints."],
+           ["Technical fluency", "Ruby on Rails, React, Node, SQL/PostgreSQL, GCP, CI/CD."],
+           ["Integration design", "Yardi, Entrata, RealPage, Rent Manager, Twilio, Stripe, Salesforce."]
+         ].each do |title, body| %>
+        <div>
+          <h2 class="font-display text-[1.08rem] font-semibold text-ink-950"><%= title.html_safe %></h2>
+          <p class="mt-2 text-[0.95rem] leading-relaxed text-ink-500"><%= body %></p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<%# ── Experience ─────────────────────────────────────────────────────────── %>
+<section class="border-t border-ink-100">
+  <div class="mx-auto max-w-6xl px-6 py-20 sm:px-8">
+    <p class="eyebrow">Experience</p>
+
+    <div class="mt-12 space-y-16">
+      <%
+        roles = [
+          {
+            org: "DepositCloud",
+            note: "Ireland (US market) — multi-tenant Rails SaaS managing the full US rental security-deposit lifecycle for property management companies and multifamily operators.",
+            titles: [["Director of Product Engineering", "Jul 2026 – Present"], ["Lead Product Engineer", "Jun 2024 – Jul 2026"]],
+            points: [
+              "Own product delivery across three applications serving 250k+ customers (85k+ active accounts, 160k+ enrollments onboarding) — roadmap, prioritisation and release planning with a distributed team of 8 engineers.",
+              "Partnered with company leadership to redesign core user journeys end-to-end, using rapid prototyping and production data to validate each change before full rollout.",
+              "Introduced feature flags with analytics (Flipper) as the standard launch mechanism — every significant feature now ships behind a flag with defined success metrics.",
+              "Scoped, built and launched a Twilio-based contact-centre product in under three months, reducing average handling time, eliminating 100% of third-party vendor costs, and giving operations real-time visibility they previously lacked.",
+              "Defined and delivered a greenfield PMS Sync &amp; Data Analytics product, designing two-way API integrations with Yardi, Entrata, RealPage and Rent Manager — the integrations that unlock enterprise property-manager accounts.",
+              "Sustained a delivery cadence of 900+ merged PRs and 18–25 major multi-phase initiatives over 24 months through structured Agile planning, weekly one-to-ones and clear initiative scoping.",
+              "Cut the release cycle from two weeks to under four hours by re-architecting CI/CD (Docker, GitHub Actions) — turning releases from a scheduling constraint into a product decision.",
+              "Drove SOC 2 Type I compliance with penetration testing and automated vulnerability scanning integrated into CI."
+            ]
+          },
+          {
+            org: "Product Consultant &amp; Adviser",
+            note: "Advisory and hands-on product engineering for early-stage Irish companies.",
+            titles: [["Independent", "2024 – Present"]],
+            points: [
+              "<strong class=\"font-medium text-ink-900\">Guest Nutrition</strong> (2024 – present) — product adviser to an Enterprise Ireland High Potential Start-Up; took the product from 0 to 1 and into active trials with industry-leading operators.",
+              "<strong class=\"font-medium text-ink-900\">WealthGuard</strong> (2025 – present) — designed and built a complete wealth-management application in Ruby on Rails, now in production use by 100+ high-net-worth clients."
+            ]
+          },
+          {
+            org: "DocuDynamics",
+            note: "Compliance-automation startup. The closest job there is to product management: everything from customer discovery to production code.",
+            titles: [["Founder", "Nov 2022 – Jun 2024"]],
+            points: [
+              "Designed and shipped the entire v1 web product from idea to funded MVP in five months (React, Node, AWS), securing Microsoft for Startups and New Frontiers Phase 2 backing.",
+              "Owned the critical user workflow — document upload → AI processing → collaboration — iteratively rebuilding friction points identified through direct user observation.",
+              "Prototyped and validated major UX and architecture changes in production, using data to kill features or double down."
+            ]
+          },
+          {
+            org: "Penco",
+            note: nil,
+            titles: [["Digital Operations Manager", "Dec 2019 – Nov 2022"]],
+            points: [
+              "Owned end-to-end delivery of web and mobile features, combining user research with full-stack implementation, consistently shipping production-ready work in 1–2 week sprints.",
+              "Designed and shipped a Salesforce CRM integration that eliminated 60% of manual data entry, increasing operational capacity by 40%.",
+              "Introduced Hotjar for same-week user testing, cutting feature validation time by 70% and embedding a rapid-prototyping culture in the team.",
+              "Featured in The Sunday Times (Business, Jul 2020) on how Irish SMEs can become data-driven."
+            ]
+          },
+          {
+            org: "Earlier roles",
+            note: nil,
+            titles: [["Design and engineering", "2016 – 2019"]],
+            points: [
+              "Full Stack Developer, Gambling.com Group, Dublin (Jan – Dec 2019).",
+              "User Experience Designer, GRID Finance, Dublin (Jan 2018 – Jan 2019) — research, journey mapping and interface design for an SME lending platform.",
+              "Multimedia Designer, Associated Newspapers (Jun 2017 – Jun 2018) and Cauldron Recording Studios (Jun – Sep 2016), Dublin."
+            ]
+          }
+        ]
+      %>
+
+      <% roles.each do |role| %>
+        <article class="grid gap-6 border-t border-ink-100 pt-8 lg:grid-cols-[15rem_1fr] lg:gap-12">
+          <div>
+            <h2 class="font-display text-[1.3rem] font-semibold leading-tight text-ink-950"><%= role[:org].html_safe %></h2>
+            <div class="mt-3 space-y-1.5">
+              <% role[:titles].each do |title, period| %>
+                <div>
+                  <p class="text-[0.92rem] font-medium text-ink-700"><%= title %></p>
+                  <p class="font-mono text-[0.7rem] text-ink-400"><%= period %></p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+          <div>
+            <% if role[:note] %>
+              <p class="mb-4 max-w-2xl text-[0.9rem] italic leading-relaxed text-ink-400"><%= role[:note].html_safe %></p>
+            <% end %>
+            <ul class="max-w-3xl space-y-2.5">
+              <% role[:points].each do |point| %>
+                <li class="grid grid-cols-[0.75rem_1fr] gap-3 text-[0.96rem] leading-relaxed text-ink-500">
+                  <span class="mt-[0.72rem] h-px w-2.5 bg-ink-300" aria-hidden="true"></span>
+                  <span><%= point.html_safe %></span>
+                </li>
+              <% end %>
+            </ul>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<%# ── Education & recognition ────────────────────────────────────────────── %>
+<section class="border-t border-ink-100 bg-panel">
+  <div class="mx-auto grid max-w-6xl gap-14 px-6 py-20 sm:px-8 lg:grid-cols-2">
+    <div>
+      <p class="eyebrow">Education &amp; further study</p>
+      <ul class="mt-6 space-y-5">
+        <% [
+             ["Professional Academy Diploma, Advanced Artificial Intelligence for Business", "UCD Professional Academy · Jul – Nov 2026, in progress"],
+             ["BA (Hons), Digital Art", "IADT Dún Laoghaire, NFQ Level 8 · 2013 – 2017, second-class honours (2.1)"],
+             ["New Frontiers, Phase 2", "TU Dublin · Oct 2022 – Mar 2023"],
+             ["Professional Diploma, Digital Marketing", "Waterford Institute of Technology · 2018 – 2019"]
+           ].each do |title, detail| %>
+          <li>
+            <p class="text-[0.98rem] font-medium text-ink-900"><%= title %></p>
+            <p class="mt-0.5 text-[0.86rem] text-ink-400"><%= detail %></p>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+
+    <div>
+      <p class="eyebrow">Recognition</p>
+      <ul class="mt-6 space-y-5">
+        <% [
+             ["New Frontiers Phase 2", "TU Dublin"],
+             ["Microsoft for Startups", "DocuDynamics"],
+             ["The Sunday Times", "Business feature, July 2020 — on how Irish SMEs can become data-driven"]
+           ].each do |title, detail| %>
+          <li>
+            <p class="text-[0.98rem] font-medium text-ink-900"><%= title %></p>
+            <p class="mt-0.5 text-[0.86rem] text-ink-400"><%= detail %></p>
+          </li>
+        <% end %>
+      </ul>
+
+      <div class="mt-10 rounded-lg border border-ink-100 p-6">
+        <p class="eyebrow">Full CV</p>
+        <p class="mt-3 text-[0.95rem] leading-relaxed text-ink-500">
+          Two pages, covering everything above with the detail intact.
+        </p>
+        <a href="<%= contact[:cv] %>" download
+           class="mt-5 inline-flex items-center gap-2 rounded-full bg-ink-950 px-4 py-2 text-[0.88rem] font-medium text-paper transition hover:bg-ink-700">
+          Download CV (PDF)
+          <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
+            <path d="M10 3.5v10m0 0 3.5-3.5M10 13.5 6.5 10M4 16.5h12" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,72 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Pages deployment needs these; nothing here writes to the repo.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it midway.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      # A user/organisation site (owner.github.io) is served from the domain root.
+      # Any other repository is served from /<repo>/, so the rendered HTML needs
+      # that prefix baked in.
+      - name: Work out the base path
+        id: base
+        run: |
+          repo="${GITHUB_REPOSITORY#*/}"
+          owner="${GITHUB_REPOSITORY%/*}"
+          if [ "$(echo "$repo" | tr '[:upper:]' '[:lower:]')" = "$(echo "$owner" | tr '[:upper:]' '[:lower:]').github.io" ]; then
+            echo "path=" >> "$GITHUB_OUTPUT"
+            echo "Serving from the domain root."
+          else
+            echo "path=/$repo" >> "$GITHUB_OUTPUT"
+            echo "Serving under /$repo/."
+          fi
+
+      - name: Build CSS and assets
+        env:
+          RAILS_ENV: production
+          SECRET_KEY_BASE: only-used-to-boot-the-app-for-rendering
+        run: |
+          bin/rails tailwindcss:build
+          bin/rails assets:precompile
+
+      - name: Render the site
+        env:
+          RAILS_ENV: production
+          SECRET_KEY_BASE: only-used-to-boot-the-app-for-rendering
+          BASE_PATH: ${{ steps.base.outputs.path }}
+        run: bin/rails static:build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

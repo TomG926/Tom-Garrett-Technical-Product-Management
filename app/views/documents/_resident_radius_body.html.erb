@@ -1,0 +1,565 @@
+<div class="doc">
+
+  <!-- ============================ COVER ============================ -->
+  <header class="cover">
+    <span class="eyebrow">Product case study &middot; Voice infrastructure</span>
+    <h1>Resident Radius<br>Contact Centre</h1>
+    <p class="lede">Building a multilingual, browser-based call centre on Twilio Programmable Voice — and then making it survive the parts of telephony that nobody controls: carrier rejections, out-of-order webhooks, and agents whose state lives in two places at once.</p>
+
+    <div class="cover-meta">
+      <div><span class="k">Role</span><span class="v">Product &amp; delivery lead</span></div>
+      <div><span class="k">Timeline</span><span class="v">Dec 2024 – Jun 2026</span></div>
+      <div><span class="k">Team</span><span class="v">7 contributors</span></div>
+      <div><span class="k">Status</span><span class="v">In production (GCP)</span></div>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/resident-radius/agent-dashboard.png" alt="The Resident Radius agent home screen: a Make a Call panel with country prefix and number field, a WebSocket connection indicator reading Online / Fully Connected, a call-availability toggle, a voicemail table with playback and Create Client Profile links, an empty missed-calls list, and two bar charts of today's and this week's call analytics.">
+      <figcaption><span class="fignum">Fig. 1</span>The agent's home screen. Outbound dialler, live WebSocket health indicator, availability toggle, inbound voicemail queue, and personal call analytics — the four things an agent needs before a call and the two they need after one.</figcaption>
+    </figure>
+  </header>
+
+  <!-- ============================ 01 ============================ -->
+  <section id="summary">
+    <div class="opener"><span class="secnum">01</span><h2>Executive summary</h2></div>
+
+    <div class="col">
+      <p>Resident Radius Contact Centre is a custom contact centre that replaces off-the-shelf call centre software for a property-management support team. Residents call one number, choose a language, and are routed to an agent who speaks it. Agents take and place calls entirely in the browser — no desk phone, no softphone install.</p>
+      <p>The product covers the full lifecycle of a support call: an inbound IVR with nine languages, language-aware round-robin routing, two-party conferences, warm transfer, hold, voicemail capture, a lightweight caller CRM, per-agent analytics, and a supervisor console that escalates calls nobody has answered.</p>
+      <p>The interesting product work was not the happy path. It was everything that happens when a distributed telephony system disagrees with itself — and the case study below is organised around that: what we built, then the three classes of failure we had to design against, then a production incident that forced the largest single change to how the system handles failure.</p>
+    </div>
+
+    <div class="stats">
+      <div><div class="stat-n">~5,000</div><div class="stat-k">Calls a month, measured</div></div>
+      <div><div class="stat-n">~230</div><div class="stat-k">Calls a working day, measured</div></div>
+      <div><div class="stat-n">~2 min</div><div class="stat-k">Average handled call</div></div>
+      <div><div class="stat-n">9</div><div class="stat-k">Languages in the IVR, each with its own routing queue</div></div>
+    </div>
+
+    <div class="col" style="margin-top:2rem">
+      <div class="callout deep">
+        <span class="eyebrow">What that volume means for the routing model</span>
+        <p>The call figures are taken from the telephony provider's own call logs and the platform's analytics in production, and the two cross-check: about 5,000 calls a month divides across roughly 22 working days into the 230 a day the dashboards report. Volume is quoted as a monthly average rather than a single month, because move-in and move-out seasonality moves it either side of that.</p>
+        <p>The number that actually shaped the design is what falls out of it. Five thousand calls at a two-minute average is around 165 talk-hours a month — under eight hours a day spread across a multilingual team, which means agents are <em>not</em> on a call for most of their shift. That is not slack; it is the requirement. An agent has to be idle to be reachable in their language, so the scarce resource is a free Spanish speaker at 4pm rather than total utilisation.</p>
+        <p>Which is why the routing model in section 04 optimises for per-language fairness rather than for keeping everyone maximally busy. A conventional occupancy target would have been the wrong objective for this product, and the volume is the evidence for that.</p>
+      </div>
+    </div>
+
+    <div class="col" style="margin-top:1.6rem">
+      <div class="callout">
+        <span class="eyebrow">The one-line version</span>
+        <p>We shipped a browser-based multilingual contact centre, then spent the second half of the project converting silent failures into visible, recoverable ones — because in telephony a crash the user hears as &ldquo;dead air&rdquo; is worse than an error message.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 02 ============================ -->
+  <section id="context">
+    <div class="opener"><span class="secnum">02</span><h2>Context and the problem</h2></div>
+
+    <div class="col">
+      <h3>Why build rather than buy</h3>
+      <p>Hosted contact centre products price per agent seat and assume a conventional support org. This team's requirements pulled in a different direction on three axes at once:</p>
+    </div>
+
+    <div class="full tw">
+      <table>
+        <thead><tr><th style="width:24%">Requirement</th><th style="width:38%">Why off-the-shelf struggled</th><th>What we needed instead</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="t">Language-first routing</span></td>
+            <td>Skills-based routing exists, but tying a caller's IVR language choice to a per-language fairness queue is bespoke logic.</td>
+            <td>A separate round-robin pointer per language, so a Spanish call never disadvantages the English queue.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Caller context at answer time</span></td>
+            <td>CRM integrations assume a CRM. This team's caller data lives in the same product as the deposit account it relates to.</td>
+            <td>Caller lookup by phone number, auto-created profiles, and notes written during the call in the same modal.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Supervisor intervention</span></td>
+            <td>Generic dashboards report on calls after the fact.</td>
+            <td>A live console that flags a call ringing too long and lets a supervisor answer it or push it to voicemail mid-ring.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col" style="margin-top:2.5rem">
+      <h3>The three users</h3>
+    </div>
+
+    <div class="full tw">
+      <table>
+        <thead><tr><th style="width:20%">User</th><th style="width:36%">Job to be done</th><th>How the product serves it</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="t">Resident</span><span class="s"><span class="chip">Caller</span></span></td>
+            <td>&ldquo;Reach someone who speaks my language, without repeating myself or waiting forever.&rdquo;</td>
+            <td>Nine-language IVR accepting both keypad and speech; two routing attempts; then voicemail rather than an endless ring.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Agent</span><span class="s"><span class="chip warn">Operator</span></span></td>
+            <td>&ldquo;Take the next call, see who it is, handle it, hand it off if it isn't mine.&rdquo;</td>
+            <td>Browser softphone, one availability toggle, caller profile and notes in the call modal, dial pad, hold, transfer, leave.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Supervisor</span><span class="s"><span class="chip deep">Admin</span></span></td>
+            <td>&ldquo;Know that nothing is falling on the floor, and intervene when it is.&rdquo;</td>
+            <td>Agent roster and language assignment, live queue positions, long-call alerts with answer / voicemail actions, alert history.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================ 03 ============================ -->
+  <section id="product">
+    <div class="opener"><span class="secnum">03</span><h2>What the product does</h2></div>
+
+    <div class="col">
+      <p>The capability map below is the whole surface area. Everything in it is live in the running application; the screenshots throughout this document are from a working instance seeded with synthetic data.</p>
+    </div>
+
+    <div class="full tw">
+      <table>
+        <thead><tr><th style="width:20%">Capability</th><th style="width:42%">What it does</th><th>Notable mechanics</th></tr></thead>
+        <tbody>
+          <tr><td><span class="t">Inbound IVR</span></td><td>Greets the caller and gathers a language choice by keypad digit or spoken word.</td><td>Nine languages; invalid input re-prompts rather than dropping.</td></tr>
+          <tr><td><span class="t">Language routing</span></td><td>Picks the next agent who speaks the chosen language and is genuinely reachable.</td><td>Per-language pointer, row-locked to prevent double-assignment.</td></tr>
+          <tr><td><span class="t">Browser softphone</span></td><td>Agents receive and place calls from the dashboard using the Twilio Voice SDK.</td><td>Short-lived access tokens fetched from a single hardened endpoint.</td></tr>
+          <tr><td><span class="t">Conference model</span></td><td>Every conversation is a two-party conference rather than a direct dial.</td><td>Makes transfer, hold, and supervisor entry possible without dropping the caller.</td></tr>
+          <tr><td><span class="t">Warm transfer</span></td><td>Agent picks a target, caller goes on hold, second agent is dialled in.</td><td>Cancellable mid-flight; original agent can stay or leave.</td></tr>
+          <tr><td><span class="t">Voicemail</span></td><td>Captures a recording when no agent is reachable, or on supervisor action.</td><td>Recording is attached to the caller's profile, surfaced on the dashboard.</td></tr>
+          <tr><td><span class="t">Caller CRM</span></td><td>Profile per phone number with name, email, type, company, community, and notes.</td><td>Auto-created on first contact so no call is ever anonymous twice.</td></tr>
+          <tr><td><span class="t">Analytics</span></td><td>Per-agent and org-wide call counts, durations, and missed calls by day and week.</td><td>Counts distinct call SIDs, so multi-leg conferences aren't double-counted.</td></tr>
+          <tr><td><span class="t">Live monitoring</span></td><td>Flags inbound calls waiting too long; supervisor can answer or force voicemail.</td><td>Alerts in Redis with a 24h TTL; resolutions persisted for history.</td></tr>
+          <tr><td><span class="t">Recording</span></td><td>Inbound and outbound call recording with hold music and transfer support.</td><td>Recording status handled as its own webhook lifecycle.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="fig-pair">
+      <figure>
+        <img src="/case-studies/img/resident-radius/incoming-call.png" alt="An incoming-call card overlaying the agent dashboard: a green Incoming Call header reading Tap to answer, the caller number +1 415 555 0134, client information showing name, email and caller type, and a full-width Accept Call button.">
+        <figcaption><span class="fignum">Fig. 2</span><strong>Inbound.</strong> The call arrives as a lightweight prompt with the caller number resolved, so the agent decides to answer with context rather than after it.</figcaption>
+      </figure>
+      <figure>
+        <img src="/case-studies/img/resident-radius/sign-in.png" alt="The Resident Radius log-in screen: a centred card with email and password fields, a Remember me checkbox and a Log in button, under a blue application bar.">
+        <figcaption><span class="fignum">Fig. 3</span><strong>Access.</strong> Device-authenticated sessions; agents are provisioned by a supervisor and deactivated rather than deleted, preserving call history.</figcaption>
+      </figure>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/resident-radius/active-call.png" alt="The active call workspace in three columns: left, the caller number, a live duration of 00:02:17, client information, a transfer-target selector, a DTMF dial pad and Hold, Leave, Transfer and Hang Up buttons; centre, an editable client profile form; right, the client's notes history and a new-note box.">
+      <figcaption><span class="fignum">Fig. 4</span>The active call workspace — the densest screen in the product, and deliberately so. Left: call identity, live duration, transfer target, DTMF dial pad, and the four irreversible actions (hold, leave, transfer, hang up). Centre: the caller's profile, editable during the call. Right: notes history and a new-note box. An agent completes wrap-up before hanging up instead of after, which is the only reliable way to get notes written at all.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================ 04 ============================ -->
+  <section id="flows">
+    <div class="opener"><span class="secnum">04</span><h2>The core flows</h2></div>
+
+    <div class="col">
+      <h3>Flow 1 — Inbound call to connected agent</h3>
+    </div>
+
+    <div class="full ladder">
+      <div><span class="n">Step 1</span><span class="t">Caller dials</span><span class="s">Twilio posts the call to the app.</span></div>
+      <div><span class="n">Step 2</span><span class="t">Language menu</span><span class="s">Digit or speech, nine options.</span></div>
+      <div><span class="n">Step 3</span><span class="t">Round-robin pick</span><span class="s">Locked, per-language pointer.</span></div>
+      <div><span class="n">Step 4</span><span class="t">Conference created</span><span class="s">Caller joins, agent is dialled.</span></div>
+      <div><span class="n">Step 5</span><span class="t">Agent answers</span><span class="s">Two-party private conference.</span></div>
+    </div>
+    <div class="branch">
+      <p><span class="lbl">No agent reachable</span>The app retries the search once, then records a voicemail rather than ringing indefinitely.</p>
+      <p><span class="lbl">No pick-up in 25s</span>A timeout job re-routes to the next agent; on the second timeout the caller goes to voicemail.</p>
+    </div>
+
+    <div class="col" style="margin-top:1.6rem">
+      <p>The routing decision is the product's most load-bearing piece of logic. It has to satisfy two things that pull against each other: <strong>fairness</strong> (agents should get roughly equal call volume) and <strong>reachability</strong> (never route to an agent who isn't really there). We resolved this by making the pointer advance only when a call is actually placed, and by checking three separate conditions before assigning — the agent is connected, has marked themselves available, and is not already on a call.</p>
+    </div>
+
+    <div class="col" style="margin-top:2.5rem">
+      <h3>Flow 2 — Outbound call from the browser</h3>
+    </div>
+
+    <div class="full ladder">
+      <div><span class="n">Step 1</span><span class="t">Agent dials</span><span class="s">Number entered, country prefix.</span></div>
+      <div><span class="n">Step 2</span><span class="t">Number validated</span><span class="s">Normalised to E.164.</span></div>
+      <div><span class="n">Step 3</span><span class="t">Conference opened</span><span class="s">Agent's own outbound room.</span></div>
+      <div><span class="n">Step 4</span><span class="t">Carrier leg dialled</span><span class="s">60s timeout, status callbacks.</span></div>
+      <div><span class="n">Step 5</span><span class="t">Agent joins</span><span class="s">Same conference, call live.</span></div>
+    </div>
+    <div class="branch">
+      <p><span class="lbl">Invalid number</span>The agent hears a spoken error instead of the call silently failing.</p>
+    </div>
+    <div class="branch new">
+      <p><span class="lbl">Carrier rejects the destination</span>The agent's call is marked failed, the agent is released back to available, and they hear why. <strong>This path did not exist before the June 2026 incident</strong> — see section 07.</p>
+    </div>
+
+    <div class="col" style="margin-top:2.5rem">
+      <h3>Flow 3 — Transfer, hold, and leave</h3>
+      <p>Because every conversation is a conference rather than a direct bridge, transfer is a participant operation instead of a call teardown. The caller is placed on hold, the target agent is dialled into the same conference, and the original agent chooses whether to stay (three-way) or leave. A transfer can be cancelled while the second agent is still ringing, which returns the caller to the original agent rather than dropping them — the failure mode that a naive &ldquo;redirect the call&rdquo; implementation would produce.</p>
+    </div>
+
+    <div class="col" style="margin-top:2.5rem">
+      <h3>Flow 4 — The call nobody answered</h3>
+    </div>
+
+    <div class="full ladder">
+      <div><span class="n">T = 0</span><span class="t">Call waiting</span><span class="s">Inbound leg, no live agent leg.</span></div>
+      <div><span class="n">T = 2 min</span><span class="t">Alert raised</span><span class="s">Pushed to online supervisors.</span></div>
+      <div class="human"><span class="n">Supervisor</span><span class="t">Answer or divert</span><span class="s">Takes the call, or sends it to voicemail.</span><span class="m">human &middot; first</span></div>
+      <div><span class="n">T = 3 min</span><span class="t">Auto voicemail</span><span class="s">If still unhandled, the system acts.</span></div>
+      <div><span class="n">After</span><span class="t">Recorded &amp; audited</span><span class="s">Alert resolved, history kept.</span></div>
+    </div>
+
+    <div class="col" style="margin-top:1.6rem">
+      <div class="callout">
+        <span class="eyebrow">Product judgement</span>
+        <p>The system escalates to a human first and only acts unilaterally a minute later. Automating immediately would have been simpler, but it would have removed a supervisor's ability to rescue a call that was about to be answered.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 05 ============================ -->
+  <section id="supervisor">
+    <div class="opener"><span class="secnum">05</span><h2>The supervisor console</h2></div>
+
+    <div class="col">
+      <p>Three screens, each answering one question a supervisor asks during a shift.</p>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/resident-radius/admin-dashboard.png" alt="The Manage Users admin screen: a timeframe selector, an Overall Analytics panel with a metrics bar chart and a Calls by Status pie chart split between completed, busy, no-answer and failed, then an agent table listing name, email, admin, available and active columns with Edit, Languages, Deactivate and Delete actions.">
+      <figcaption><span class="fignum">Fig. 5</span>&ldquo;Who is staffed, and how are we doing?&rdquo; Org-wide analytics over a selectable timeframe sit above the agent roster. Each agent row carries the two states that matter operationally — admin rights and availability — plus language assignment and a deactivate action that preserves their call history rather than deleting it.</figcaption>
+    </figure>
+
+    <figure>
+      <img src="/case-studies/img/resident-radius/queue-positions.png" alt="The Agent Queue Positions screen: a status-indicator key showing Online, Available (Database) and Available (Redis) as three separate marks, a Refresh View button, and a table of agents against nine language columns — EN, FR, PT, ES, ZH, FA, DA, KO, RU — each agent name carrying its three indicators.">
+      <figcaption><span class="fignum">Fig. 6</span>&ldquo;Who is actually next?&rdquo; Queue position per agent per language. The three status indicators are the important detail: online, available (database), and available (Redis) are shown separately, because during the project we learned that these three can disagree — and that a supervisor debugging a routing complaint needs to see the disagreement, not an averaged-out summary.</figcaption>
+    </figure>
+
+    <div class="fig-pair">
+      <figure>
+        <img src="/case-studies/img/resident-radius/call-monitoring.png" alt="The Call Monitoring screen with Current Alerts and Alert History tabs, showing an all-clear state: a green tick, the heading All Good! and the line No long-running calls at the moment.">
+        <figcaption><span class="fignum">Fig. 7</span>&ldquo;Is anything falling on the floor right now?&rdquo; Live long-call alerts with an explicit all-clear state, and a separate history tab so that resolutions — whether taken by a supervisor or by the automatic timeout — remain auditable after the fact.</figcaption>
+      </figure>
+      <figure>
+        <img src="/case-studies/img/resident-radius/client-profiles.png" alt="The Client Profiles screen: a search box, an email filter, Apply, Clear and New Client Profile buttons, and a table of eight caller records with name, phone number, email, client type, management, community and View / Edit actions.">
+        <figcaption><span class="fignum">Fig. 8</span>The caller CRM. Searchable by name, phone, or email. Profiles are created automatically on first contact, which means the searchable history builds itself from call traffic instead of depending on agents remembering to create records.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============================ 06 ============================ -->
+  <section id="state">
+    <div class="opener"><span class="secnum">06</span><h2>The hard part: one agent, two sources of truth</h2></div>
+
+    <div class="col">
+      <p>An agent's availability has to be readable in single-digit milliseconds during routing, and it has to survive a server restart. Those two requirements point at different storage.</p>
+      <p>We ended up with both: <strong>PostgreSQL</strong> holds the durable availability flag and the audit trail of every change; <strong>Redis</strong> holds the live operational state — connection count, availability, and an <code>on_call</code> marker — under a 30-second TTL, so an agent whose browser dies silently ages out of the routing pool instead of absorbing calls forever.</p>
+      <p>Dual-writing state is a decision that buys speed and self-healing at the cost of a consistency problem you now own. Most of the second half of the project was spent paying that cost deliberately rather than accidentally. These were the failure modes and what each one forced us to build:</p>
+    </div>
+
+    <div class="full tw">
+      <table>
+        <thead><tr><th style="width:22%">Failure mode</th><th style="width:34%">What the user experienced</th><th>What we built</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="t">Double assignment</span><span class="s"><span class="chip live">Race</span></span></td>
+            <td>Two simultaneous callers routed to the same agent; one heard ringing that went nowhere.</td>
+            <td>Agent selection and the busy-marking now happen inside a single row lock on the language's pointer record, so the check and the claim cannot interleave.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Stranded busy agent</span><span class="s"><span class="chip live">Leak</span></span></td>
+            <td>An agent stopped receiving calls indefinitely after a failed call setup.</td>
+            <td>Explicit compensation: if dialling the agent into a conference fails or returns nothing, their busy state is rolled back and they return to the pool.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Out-of-order webhooks</span><span class="s"><span class="chip live">Ordering</span></span></td>
+            <td>A live call was marked &ldquo;no answer&rdquo;; the agent's status flipped mid-conversation.</td>
+            <td>A lifecycle rank per status. A callback that would move a call backwards — a stale <code>ringing</code> arriving after <code>in-progress</code> — is now rejected rather than applied.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Duplicate webhooks</span><span class="s"><span class="chip live">Idempotency</span></span></td>
+            <td>Nothing visible to the caller, but Twilio saw repeated errors and stopped trusting our callback endpoint.</td>
+            <td>Duplicate call identifiers are now treated as updates to the existing record instead of raising a uniqueness violation.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Silent browser death</span><span class="s"><span class="chip live">Liveness</span></span></td>
+            <td>Calls routed into a closed laptop.</td>
+            <td>TTL-based presence with a heartbeat, a delayed decrement on disconnect so a page refresh doesn't read as leaving, and reconnection before the platform's socket timeout.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Zombie active calls</span><span class="s"><span class="chip live">Staleness</span></span></td>
+            <td>Supervisors saw alerts for calls that had ended hours or days earlier.</td>
+            <td>The monitoring sweep now ignores <code>in-progress</code> records older than six hours, and logs how many it skipped rather than skipping them silently.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col" style="margin-top:2.5rem">
+      <div class="callout deep">
+        <span class="eyebrow">The transferable lesson</span>
+        <p>Every one of these was reported as a call-quality complaint, not as a bug. &ldquo;The call dropped&rdquo;, &ldquo;I stopped getting calls&rdquo;, &ldquo;it rang and nobody was there.&rdquo; Voice products compress a wide range of distinct technical failures into a single indistinguishable user experience — which means the instrumentation has to be good enough to tell them apart before you can prioritise between them. Building the separate online / available-in-DB / available-in-Redis indicators into the supervisor view was ultimately a product decision to make internal disagreement visible.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 07 ============================ -->
+  <section id="incident">
+    <div class="opener"><span class="secnum">07</span><h2>Incident deep dive: the dropped calls, June 2026</h2></div>
+
+    <div class="col">
+      <p>Agents reported roughly a minute of dead air on some outbound calls, followed by the call dropping. This is the clearest example of the pattern above, and it produced the single largest change to how the system handles failure.</p>
+      <h3>What was actually happening</h3>
+      <p>When an agent dialled a destination the telephony account was not permitted to call, the carrier rejected the outbound leg. The application did not handle that rejection — it raised an unhandled error and returned a server error to the caller's live browser session instead of returning valid call instructions. Three separate problems were tangled together:</p>
+    </div>
+
+    <div class="full tw">
+      <table>
+        <thead><tr><th style="width:24%">Problem</th><th style="width:38%">Root cause</th><th>User-visible effect</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="t">Unhandled carrier rejection</span></td>
+            <td>Two distinct rejection codes on the outbound dial path were never rescued, so the active call path crashed.</td>
+            <td>Dead air for up to the 60-second dial timeout, then a dropped call and inconsistent local state.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Non-idempotent callbacks</span></td>
+            <td>A repeated call identifier hit a uniqueness validation and returned an error status.</td>
+            <td>The telephony provider logged delivery warnings and retried; call records could diverge from reality.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Malformed callback URLs</span></td>
+            <td>Phone numbers in E.164 form were embedded raw in query strings, so a leading <code>+</code> could decode as a space.</td>
+            <td>The classifier could mistake our own caller ID for an external number, corrupting call direction.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col" style="margin-top:2.5rem">
+      <h3>The fix, and the principle behind it</h3>
+      <p>The remediation was not &ldquo;make the carrier rejection stop happening&rdquo; — that is an account permissions matter outside the application. It was <strong>make a rejected call leg degrade into a handled outcome instead of a crash</strong>:</p>
+    </div>
+
+    <div class="col" style="margin-top:1.4rem">
+      <div class="callout">
+        <span class="eyebrow">What shipped</span>
+        <ul>
+          <li>The conference service now returns a structured failure result instead of letting a carrier error escape.</li>
+          <li>The outbound path handles that result explicitly: it marks the call failed, releases the agent back to available, and returns valid instructions so the agent hears that the call could not be placed.</li>
+          <li>Callback URLs are generated through framework helpers so phone numbers encode correctly.</li>
+          <li>Duplicate callbacks update the existing record rather than raising.</li>
+          <li>Legacy malformed numbers are normalised so they cannot fabricate a phantom external call.</li>
+          <li>The monitoring sweep ignores very old <code>in-progress</code> records so historical data stops triggering live alerts.</li>
+          <li>Focused regression tests were added for every one of the above paths.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col" style="margin-top:1.6rem">
+      <div class="callout live">
+        <span class="eyebrow">Honest reckoning: what the incident review left open</span>
+        <p>The written follow-up list is as important as the fix, and most of it is not code:</p>
+        <ul>
+          <li>Account-level geography permissions still reject the destinations that triggered the incident. The app now fails gracefully; the calls still fail.</li>
+          <li>A policy decision was deferred: whether to enable a whole calling region globally or gate it per team in the application. The review recommended app-level gating as the safer default — a product decision, not a technical one.</li>
+          <li>The incident was detected by agents rather than by monitoring, which the review recorded as the real gap — see section 10.</li>
+          <li>Existing stale production records need clearing, since the new six-hour cutoff prevents the symptom without cleaning the data.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col" style="margin-top:1.6rem">
+      <p>Writing the unresolved items down with owners and reasoning — rather than closing the incident when the code merged — is the part of this I would repeat unchanged.</p>
+    </div>
+  </section>
+
+  <!-- ============================ 08 ============================ -->
+  <section id="decisions">
+    <div class="opener"><span class="secnum">08</span><h2>Decisions and trade-offs</h2></div>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:20%">Decision</th><th style="width:26%">Why</th><th style="width:26%">What it cost</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="t">Conference for every call, not direct dial</span></td>
+            <td>Transfer, hold, and supervisor entry all become participant operations instead of call teardowns.</td>
+            <td>Two call legs per conversation; analytics must count distinct calls to avoid double-counting.</td>
+            <td><span class="chip ok">Right call</span><span class="s">Made the entire transfer feature set possible.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Redis for live state alongside Postgres</span></td>
+            <td>Routing reads must be fast, and TTLs give free self-healing when a browser dies.</td>
+            <td>A real consistency problem, and most of the bugs in section 06.</td>
+            <td><span class="chip warn">Right, underestimated</span><span class="s">Correct architecture; we under-budgeted the reconciliation work.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Per-language round-robin pointers</span></td>
+            <td>One global queue would let a busy language starve a quiet one.</td>
+            <td>More state to keep consistent; fairness is per-language, not global.</td>
+            <td><span class="chip ok">Right call</span><span class="s">Directly serves the multilingual promise.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Escalate to a human before automating voicemail diversion</span></td>
+            <td>A supervisor can rescue a call that is about to be answered; a timer cannot.</td>
+            <td>An extra minute of caller wait in the worst case, plus alert-state machinery.</td>
+            <td><span class="chip ok">Right call</span><span class="s">Automation as the fallback, not the first move.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Auto-create caller profiles on first contact</span></td>
+            <td>Agents will not reliably create records; traffic will.</td>
+            <td>Unnamed placeholder profiles accumulate and need curating.</td>
+            <td><span class="chip ok">Right call</span><span class="s">Search history builds itself.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Deploy latest revision at 100% traffic</span></td>
+            <td>Simple, fast, and safe while consecutive versions stay compatible.</td>
+            <td>Long-lived browser sessions can run old JavaScript against a new server.</td>
+            <td><span class="chip crit">Conditional</span><span class="s">Acceptable only with the explicit compatibility rules we wrote down.</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col" style="margin-top:2.5rem">
+      <div class="callout crit">
+        <span class="eyebrow">A deployment rule we had to learn the hard way</span>
+        <p>Real-time apps break the usual assumption that a deploy is atomic. An agent's browser can hold a socket to the previous revision and keep running the previous version's JavaScript until it reconnects. We wrote that into explicit release rules: keep real-time message formats backward compatible for at least one deploy; never pair a destructive schema change with the code that depends on it; change protocols in three deploys (compatibility, switch, cleanup) rather than one.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 09 ============================ -->
+  <section id="delivery">
+    <div class="opener"><span class="secnum">09</span><h2>Delivery record</h2></div>
+
+    <div class="stats">
+      <div><div class="stat-n">18 mo</div><div class="stat-k">Dec 2024 to Jun 2026, continuous delivery</div></div>
+      <div><div class="stat-n">323</div><div class="stat-k">Commits across the 18 months</div></div>
+      <div><div class="stat-n">47</div><div class="stat-k">Schema migrations against a live product</div></div>
+      <div><div class="stat-n">28</div><div class="stat-k">Twilio webhook &amp; agent-action endpoints</div></div>
+      <div><div class="stat-n">13</div><div class="stat-k">Core domain tables behind the call model</div></div>
+      <div><div class="stat-n">2</div><div class="stat-k">Environments — staging default, production gated</div></div>
+    </div>
+
+    <div class="full tw">
+      <table>
+        <thead><tr><th style="width:20%">Phase</th><th style="width:18%">When</th><th>Focus</th></tr></thead>
+        <tbody>
+          <tr><td><span class="t">Foundation</span></td><td class="num">Dec 2024</td><td>Multi-agent round robin, analytics, and the first working call path.</td></tr>
+          <tr><td><span class="t">Call control</span></td><td class="num">2025</td><td>Transfer logic, hang-up handling, dial pad, voicemail, recording, client notes.</td></tr>
+          <tr><td><span class="t">Reliability</span></td><td class="num">late 2025</td><td>Busy-state management, race conditions, reconnection, timeout behaviour, debug instrumentation.</td></tr>
+          <tr><td><span class="t">Scale &amp; ops</span></td><td class="num">early 2026</td><td>Background jobs moved onto managed task queues, caching, long-call alerting, staging Redis separation.</td></tr>
+          <tr><td><span class="t">Hardening</span></td><td class="num">May–Jun 2026</td><td>Status-callback ordering, token refresh, carrier-failure handling, and the incident review in section 07.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col" style="margin-top:2.5rem">
+      <p>The shape of that timeline is itself the finding: features dominated the first nine months, and reliability dominated the last nine. For a voice product that ordering is close to unavoidable — you cannot discover which failure modes matter until real calls are flowing — but a future project would budget for it explicitly rather than treating it as overrun.</p>
+    </div>
+  </section>
+
+  <!-- ============================ 10 ============================ -->
+  <section id="next">
+    <div class="opener"><span class="secnum">10</span><h2>What I would do next</h2></div>
+
+    <div class="col">
+      <p>Ranked by the ratio of risk removed to effort spent. The first two come directly out of the incident review; the last three are hygiene findings from auditing the running application.</p>
+    </div>
+
+    <div class="full tw">
+      <table>
+        <thead><tr><th style="width:5%">#</th><th style="width:28%">Action</th><th>Why it matters</th><th style="width:14%">Type</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="rank">1</td>
+            <td><span class="t">Alert on telephony failures</span></td>
+            <td>The June incident was detected by agents, not monitoring. Carrier rejections, outbound server errors, non-2xx callbacks, and stranded busy agents should all page someone.</td>
+            <td><span class="chip crit">Risk</span></td>
+          </tr>
+          <tr>
+            <td class="rank">2</td>
+            <td><span class="t">Decide the calling-geography policy</span></td>
+            <td>Enable regions globally or gate them per team in the app. Until this is decided, some legitimate calls still fail — gracefully, but they fail.</td>
+            <td><span class="chip warn">Policy</span></td>
+          </tr>
+          <tr>
+            <td class="rank">3</td>
+            <td><span class="t">Close the routing-logic coverage gap</span></td>
+            <td>Tests concentrate on models and services; the busiest controller — the one handling every telephony webhook — has the thinnest coverage relative to its complexity.</td>
+            <td><span class="chip">Quality</span></td>
+          </tr>
+          <tr>
+            <td class="rank">4</td>
+            <td><span class="t">Remove the dead call-history routes</span></td>
+            <td>Seven RESTful routes are declared for call records but only one action exists, so a call-history URL returns an application error. Either build the screen or drop the routes.</td>
+            <td><span class="chip">Hygiene</span></td>
+          </tr>
+          <tr>
+            <td class="rank">5</td>
+            <td><span class="t">Reconcile state rather than heal by TTL</span></td>
+            <td>TTL expiry is a good safety net but a blunt instrument. A periodic reconciler comparing live and durable agent state would turn silent divergence into a reported metric.</td>
+            <td><span class="chip deep">Architecture</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col" style="margin-top:2.5rem">
+      <div class="callout deep">
+        <span class="eyebrow">Note on outcome metrics</span>
+        <p>The volume and duration figures in section 01 come from the telephony provider's call logs and the platform's production analytics. Everything else here — languages, endpoints, tables, migrations, the failure modes, the incident — is a property of the application and can be checked against it.</p>
+        <p>What this document still does not have is the <em>before and after</em>. The three numbers that would turn section 06 from a well-argued story into a measured result are the missed-call rate either side of the reliability phase, the change in stranded-agent incidents, and handle time against the vendor product this replaced. All three are derivable from data that already exists; none of them are quoted here, because nobody has yet gone back and cut them. That is the honest gap, and it is a smaller one than it was.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ APPENDIX ============================ -->
+  <section class="appendix" id="appendix">
+    <div class="opener"><span class="secnum">A</span><h2>Appendix</h2></div>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:22%">Layer</th><th>Choice</th></tr></thead>
+        <tbody>
+          <tr><td><span class="t">Application</span></td><td>Ruby on Rails 7.2, PostgreSQL, Puma.</td></tr>
+          <tr><td><span class="t">Telephony</span></td><td>Twilio Programmable Voice — conferences, Voice SDK in the browser, webhook callbacks.</td></tr>
+          <tr><td><span class="t">Real time</span></td><td>WebSockets over Redis pub/sub; four channels for agent status, availability, notifications, and admin alerts.</td></tr>
+          <tr><td><span class="t">Live state</span></td><td>Redis with TTL-based presence and alert storage.</td></tr>
+          <tr><td><span class="t">Background work</span></td><td>Managed cloud task queues in production; Redis-backed locally.</td></tr>
+          <tr><td><span class="t">Front end</span></td><td>Server-rendered views, import maps, Turbo, utility CSS, charting library.</td></tr>
+          <tr><td><span class="t">Platform</span></td><td>Google Cloud Run, Cloud SQL, Memorystore over a private connector; SHA-tagged image builds.</td></tr>
+          <tr><td><span class="t">Quality</span></td><td>RSpec, factory fixtures, coverage reporting, static security scanning.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tw" style="margin-top:2rem">
+      <table>
+        <thead><tr><th style="width:45%">Screen</th><th>Shown in</th></tr></thead>
+        <tbody>
+          <tr><td>Agent dashboard</td><td class="num">Cover</td></tr>
+          <tr><td>Incoming call prompt &middot; Sign in</td><td class="num">Section 03</td></tr>
+          <tr><td>Active call workspace</td><td class="num">Section 03</td></tr>
+          <tr><td>Admin dashboard &amp; agent roster</td><td class="num">Section 05</td></tr>
+          <tr><td>Agent queue positions</td><td class="num">Section 05</td></tr>
+          <tr><td>Call monitoring</td><td class="num">Section 05</td></tr>
+          <tr><td>Client profiles</td><td class="num">Section 05</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col" style="margin-top:2.5rem">
+      <p class="note">Screenshots were captured from a locally running instance of the application at commit <code>790e06a</code> on <code>main</code>, populated with synthetic caller and call records. Caller names, phone numbers, and email addresses shown are fictitious. Section 07 summarises the project's own written incident review; the technical claims throughout are drawn from the application source rather than from recollection.</p>
+    </div>
+  </section>
+
+</div>

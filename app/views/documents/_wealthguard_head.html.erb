@@ -1,0 +1,283 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+
+<style>
+  /* ---- tokens: light is the base, both dark states redefine only tokens ---- */
+  :root {
+    --paper:      #F4F6F4;
+    --panel:      #FFFFFF;
+    --panel-alt:  #ECF0ED;
+    --ink:        #10201C;
+    --ink-soft:   #3D4C46;
+    --muted:      #66756E;
+    --rule:       #D5DCD7;
+    --rule-soft:  #E4E9E5;
+    --accent:     #0F5C4A;
+    --accent-ink: #0B4638;
+    --accent-bg:  #DDEAE4;
+    --warn:       #8E4F1F;
+    --warn-bg:    #F3E6DA;
+    --crit:       #8C2F2A;
+    --crit-bg:    #F4E1DF;
+    --shadow:     0 1px 2px rgba(16,32,28,.06), 0 12px 32px -18px rgba(16,32,28,.35);
+    --measure:    37rem;
+    --wide:       64rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #0C1210;
+      --panel:      #131B18;
+      --panel-alt:  #182220;
+      --ink:        #E4EBE7;
+      --ink-soft:   #B4C1BB;
+      --muted:      #879790;
+      --rule:       #26332E;
+      --rule-soft:  #1D2825;
+      --accent:     #55B996;
+      --accent-ink: #7ACFAF;
+      --accent-bg:  #16302A;
+      --warn:       #D79A62;
+      --warn-bg:    #2E2318;
+      --crit:       #E08880;
+      --crit-bg:    #301C1B;
+      --shadow:     0 1px 2px rgba(0,0,0,.4), 0 14px 34px -20px rgba(0,0,0,.9);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:      #0C1210;
+    --panel:      #131B18;
+    --panel-alt:  #182220;
+    --ink:        #E4EBE7;
+    --ink-soft:   #B4C1BB;
+    --muted:      #879790;
+    --rule:       #26332E;
+    --rule-soft:  #1D2825;
+    --accent:     #55B996;
+    --accent-ink: #7ACFAF;
+    --accent-bg:  #16302A;
+    --warn:       #D79A62;
+    --warn-bg:    #2E2318;
+    --crit:       #E08880;
+    --crit-bg:    #301C1B;
+    --shadow:     0 1px 2px rgba(0,0,0,.4), 0 14px 34px -20px rgba(0,0,0,.9);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16.5px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+    padding: 0 1.25rem 6rem;
+  }
+
+  .doc { max-width: var(--wide); margin: 0 auto; }
+
+  /* every block sits in the measured column; .wide breaks out */
+  .col { max-width: var(--measure); margin-left: 0; }
+
+  a { color: var(--accent-ink); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  /* ---------- type ---------- */
+  h1, h2, h3, h4 { font-family: Newsreader, Georgia, "Times New Roman", serif; font-weight: 500; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2.6rem, 6vw, 4.1rem); line-height: 1.02; letter-spacing: -.015em; }
+  h2 { font-size: clamp(1.65rem, 3.2vw, 2.15rem); line-height: 1.12; letter-spacing: -.01em; }
+  h3 { font-size: 1.22rem; line-height: 1.28; }
+  h4 { font-family: "IBM Plex Sans", sans-serif; font-size: .95rem; font-weight: 600; letter-spacing: .005em; }
+  p { margin: 0; }
+
+  .mono, .label, .eyebrow, .fignum, th, .stat-k, .pill, .rank {
+    font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .eyebrow {
+    font-size: .69rem; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--muted); font-weight: 500;
+  }
+  .lede { font-size: 1.16rem; line-height: 1.55; color: var(--ink-soft); }
+  em { font-style: italic; }
+  strong { font-weight: 600; color: var(--ink); }
+
+  /* ---------- cover ---------- */
+  .cover { padding: 5rem 0 2.5rem; border-bottom: 1px solid var(--rule); }
+  .cover .eyebrow { display: block; margin-bottom: 1.6rem; }
+  .cover h1 { margin-bottom: 1.5rem; }
+  .cover .lede { max-width: 40rem; font-size: 1.28rem; }
+  .cover-meta {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1.5rem; margin-top: 3rem; padding-top: 1.6rem; border-top: 1px solid var(--rule);
+  }
+  .cover-meta div { display: flex; flex-direction: column; gap: .35rem; }
+  .cover-meta .k { font-family: "IBM Plex Mono", monospace; font-size: .66rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .cover-meta .v { font-size: .95rem; line-height: 1.35; }
+
+  /* ---------- sections ---------- */
+  section { padding-top: 4.25rem; }
+  .sec-head { display: flex; align-items: baseline; gap: 1.1rem; margin-bottom: 1.75rem; }
+  .sec-num {
+    font-family: "IBM Plex Mono", monospace; font-size: .8rem; font-weight: 500;
+    color: var(--accent); letter-spacing: .06em; padding-top: .45rem; flex: none;
+    min-width: 2.2rem;
+  }
+  .stack { display: flex; flex-direction: column; gap: 1.15rem; }
+  .stack-tight { display: flex; flex-direction: column; gap: .7rem; }
+
+  /* ---------- stats ---------- */
+  .stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1.6rem 1.75rem; margin: 2.25rem 0 .5rem;
+    padding: 1.6rem 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  }
+  .stat-n { font-family: Newsreader, serif; font-size: 2.5rem; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+  .stat-k { font-size: .7rem; letter-spacing: .06em; color: var(--muted); margin-top: .55rem; line-height: 1.45; }
+
+  /* ---------- callout ---------- */
+  .callout {
+    background: var(--panel-alt); border-left: 2px solid var(--accent);
+    padding: 1.35rem 1.5rem; display: flex; flex-direction: column; gap: .6rem;
+  }
+  .callout .eyebrow { color: var(--accent-ink); }
+  .callout.warn { background: var(--warn-bg); border-left-color: var(--warn); }
+  .callout.warn .eyebrow { color: var(--warn); }
+  .callout.crit { background: var(--crit-bg); border-left-color: var(--crit); }
+  .callout.crit .eyebrow { color: var(--crit); }
+
+  /* ---------- tables ---------- */
+  .tw { overflow-x: auto; margin: .35rem 0; -webkit-overflow-scrolling: touch; }
+  table { border-collapse: collapse; width: 100%; min-width: 40rem; font-size: .885rem; }
+  thead th {
+    text-align: left; font-size: .655rem; font-weight: 600; letter-spacing: .13em;
+    text-transform: uppercase; color: var(--muted); padding: 0 1.1rem .7rem 0;
+    border-bottom: 1px solid var(--rule); vertical-align: bottom;
+  }
+  tbody td { padding: .9rem 1.1rem .9rem 0; border-bottom: 1px solid var(--rule-soft); vertical-align: top; line-height: 1.5; }
+  tbody tr:last-child td { border-bottom: 1px solid var(--rule); }
+  td:last-child, th:last-child { padding-right: 0; }
+  .num { font-variant-numeric: tabular-nums; }
+  td .t { display: block; font-weight: 600; }
+  td .s { display: block; color: var(--muted); font-size: .82rem; margin-top: .2rem; }
+
+  .pill {
+    display: inline-block; font-size: .6rem; letter-spacing: .1em; text-transform: uppercase;
+    padding: .22rem .5rem; border-radius: 2px; background: var(--panel-alt); color: var(--muted);
+    font-weight: 600; white-space: nowrap;
+  }
+  .pill.good { background: var(--accent-bg); color: var(--accent-ink); }
+  .pill.warn { background: var(--warn-bg); color: var(--warn); }
+  .pill.crit { background: var(--crit-bg); color: var(--crit); }
+
+  .rank { font-size: 1.02rem; color: var(--accent); font-weight: 500; font-variant-numeric: tabular-nums; }
+
+  /* ---------- figures ---------- */
+  figure { margin: 2.5rem 0 0; }
+  figure img {
+    display: block; width: 100%; height: auto; border: 1px solid var(--rule);
+    border-radius: 3px; box-shadow: var(--shadow); background: var(--panel);
+  }
+  figcaption {
+    margin-top: .85rem; font-size: .845rem; line-height: 1.55; color: var(--muted);
+    max-width: 46rem;
+  }
+  figcaption .fignum { color: var(--accent); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; margin-right: .55rem; }
+  .fig-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.75rem; margin: 2.5rem 0 0; }
+  .fig-pair figure { margin: 0; }
+
+  /* ---------- flow strips ---------- */
+  .flow { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: .4rem 0; }
+  .flow > div { background: var(--panel); padding: .95rem 1rem 1.05rem; display: flex; flex-direction: column; gap: .3rem; }
+  .flow .n { font-family: "IBM Plex Mono", monospace; font-size: .6rem; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  .flow .t { font-weight: 600; font-size: .92rem; line-height: 1.25; }
+  .flow .s { font-size: .79rem; color: var(--muted); line-height: 1.4; }
+
+  .note { font-size: .845rem; color: var(--muted); line-height: 1.55; }
+  .note strong { color: var(--ink-soft); }
+
+  hr.rule { border: 0; border-top: 1px solid var(--rule); margin: 0; }
+
+  .appendix { padding-top: 4.25rem; border-top: 1px solid var(--rule); margin-top: 4.5rem; }
+
+  @media (max-width: 640px) {
+    body { font-size: 16px; padding: 0 1rem 4rem; }
+    .cover { padding-top: 3rem; }
+    .sec-head { gap: .75rem; }
+    .sec-num { min-width: 1.8rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  /* ---------- print / PDF ---------- */
+  @page { size: A4; margin: 15mm 14mm 16mm; }
+
+  @media print {
+    /* Always print the light palette, whatever the screen theme was. The
+       selector list matches the specificity of the dark-mode block above and
+       sits later in the sheet, so it wins in all three theme states. */
+    :root,
+    :root:not([data-theme="light"]),
+    :root[data-theme="dark"],
+    :root[data-theme="light"] {
+      --paper:      #FFFFFF;
+      --panel:      #FFFFFF;
+      --panel-alt:  #F1F4F1;
+      --ink:        #10201C;
+      --ink-soft:   #33423C;
+      --muted:      #5D6C65;
+      --rule:       #C9D2CB;
+      --rule-soft:  #E1E7E2;
+      --accent:     #0F5C4A;
+      --accent-ink: #0B4638;
+      --accent-bg:  #E1EDE7;
+      --warn:       #8E4F1F;
+      --warn-bg:    #F5EAE0;
+      --crit:       #8C2F2A;
+      --crit-bg:    #F6E5E3;
+      --shadow:     none;
+      --measure:    33em;
+      --wide:       100%;
+    }
+
+    body { padding: 0; font-size: 9.6pt; line-height: 1.5; background: #FFFFFF; }
+    .doc { max-width: none; }
+
+    h1 { font-size: 40pt; }
+    h2 { font-size: 19pt; }
+    h3 { font-size: 12.5pt; }
+
+    /* sections open a page, as in a printed report */
+    section { break-before: page; padding-top: 0; }
+    .cover { padding: 0 0 1rem; border-bottom: 0; }
+    .cover .lede { font-size: 12pt; }
+    h2, h3, h4, .sec-head { break-after: avoid; }
+    .stack > p:first-child { break-before: avoid; }
+
+    /* tables print at full width instead of scrolling */
+    .tw { overflow: visible; }
+    table { min-width: 0; font-size: 8.2pt; }
+    thead { display: table-header-group; }
+    thead th { font-size: 6.2pt; padding-bottom: .45rem; }
+    tbody td { padding: .55rem .8rem .55rem 0; }
+    tr, .callout, .flow, .stats, figure, .fig-pair figure { break-inside: avoid; }
+
+    /* a tall screenshot is scaled to fit its page rather than split */
+    figure { margin: 1.4rem 0 0; }
+    figure img { width: auto; max-width: 100%; max-height: 182mm; box-shadow: none; }
+    .fig-pair figure img { max-height: 150mm; }
+    figcaption { font-size: 7.8pt; margin-top: .5rem; }
+    figcaption .fignum { font-size: 6.4pt; }
+
+    .stat-n { font-size: 26pt; }
+    .stat-k { font-size: 6.6pt; }
+    .stats { margin: 1.4rem 0 0; padding: 1rem 0; }
+    .flow .t { font-size: 8.4pt; }
+    .flow .s { font-size: 7.2pt; }
+    .flow .n { font-size: 5.8pt; }
+    .flow > div { padding: .6rem .7rem .7rem; }
+    .pill { font-size: 5.6pt; }
+    .note { font-size: 8pt; }
+    .appendix { margin-top: 0; border-top: 0; }
+    a { text-decoration: none; }
+  }
+</style>

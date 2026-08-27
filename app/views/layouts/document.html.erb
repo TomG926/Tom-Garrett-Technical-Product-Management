@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<%# Each case-study stylesheet supports light and dark, but the rest of the site
+    is light-only — so the documents are pinned to light here rather than leaving
+    a visitor in dark mode with a light home page and dark case studies. Every
+    study's dark rules are guarded on :not([data-theme="light"]), so this is all
+    it takes. %>
+<html lang="en" data-theme="light">
+  <head>
+    <title><%= content_for(:title) %> · Tom Garrett</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="<%= content_for(:description) %>">
+    <meta name="theme-color" content="#0B0D10">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Libre+Franklin:wght@400;500;600&display=swap">
+
+    <style>
+      /* Fallback tokens, in case a study ever ships without a stylesheet of its
+         own. Each study redefines these below, which is how the site chrome takes
+         on the colour of whichever study you're reading. */
+      :root {
+        --paper: #FBFBFC; --panel: #FFFFFF; --panel-alt: #F2F3F5;
+        --ink: #14171C; --ink-soft: #2E343D; --muted: #767E8B;
+        --rule: #E4E6EA; --rule-soft: #EFF0F3;
+        --accent: #14171C; --accent-ink: #14171C;
+        --shadow: 0 1px 2px rgba(11,13,16,.06), 0 16px 40px -26px rgba(11,13,16,.5);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --paper: #0B0D10; --panel: #14171C; --panel-alt: #1A1E24;
+          --ink: #E7E9ED; --ink-soft: #B6BCC6; --muted: #868E9A;
+          --rule: #262B32; --rule-soft: #1E232A;
+          --accent: #E7E9ED; --accent-ink: #E7E9ED;
+        }
+      }
+      /* Paint the ground explicitly: a study that brings its own stylesheet
+         repaints it, but without this a dark-mode viewer gets the dark palette's
+         text on the browser's white default. */
+      body {
+        margin: 0; padding: 0 1.5rem 4rem;
+        background: var(--paper); color: var(--ink);
+      }
+      .doc-chrome { max-width: var(--wide, 64rem); margin: 0 auto; }
+
+      /* --- site chrome, styled entirely from the document's own tokens ------ */
+      .cs-bar {
+        display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+        padding: .85rem 0 .8rem; margin-bottom: .5rem;
+        border-bottom: 1px solid var(--rule);
+        font-family: "Libre Franklin", system-ui, sans-serif;
+        font-size: .84rem; line-height: 1.4;
+      }
+      .cs-bar a { color: var(--ink-soft); text-decoration: none; }
+      .cs-bar a:hover { color: var(--ink); }
+      .cs-bar .cs-home { font-weight: 600; color: var(--ink); }
+      .cs-bar .cs-sep { color: var(--rule); }
+      .cs-bar .cs-here { color: var(--muted); }
+
+      .cs-end {
+        margin-top: 4.5rem; padding: 2.2rem 0 1rem;
+        border-top: 1px solid var(--rule);
+        font-family: "Libre Franklin", system-ui, sans-serif;
+        display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start;
+        justify-content: space-between;
+      }
+      .cs-end .cs-k {
+        font-family: "IBM Plex Mono", monospace; font-size: .64rem;
+        letter-spacing: .17em; text-transform: uppercase; color: var(--muted);
+        display: block; margin-bottom: .4rem;
+      }
+      .cs-end a { color: var(--ink); text-decoration: none; font-size: 1.02rem; font-weight: 500; }
+      .cs-end a:hover { color: var(--accent-ink); }
+      .cs-end .cs-muted { color: var(--muted); font-size: .84rem; font-weight: 400; }
+
+      @media print { .cs-bar, .cs-end { display: none !important; } }
+    </style>
+
+    <%= yield :head %>
+
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  </head>
+
+  <body>
+    <div class="doc-chrome">
+      <nav class="cs-bar" aria-label="Breadcrumb">
+        <%= link_to "Tom Garrett", root_path, class: "cs-home" %>
+        <span class="cs-sep">/</span>
+        <%= link_to "Work", work_index_path %>
+        <span class="cs-sep">/</span>
+        <span class="cs-here"><%= @case_study.title %></span>
+      </nav>
+    </div>
+
+    <%= yield %>
+
+    <div class="doc-chrome">
+      <div class="cs-end">
+        <div>
+          <span class="cs-k">Next case study</span>
+          <%= link_to @next_case_study.title, work_path(@next_case_study) %>
+          <span class="cs-muted"> — <%= @next_case_study.kicker %></span>
+        </div>
+        <div>
+          <span class="cs-k">Elsewhere</span>
+          <%= link_to "All work", work_index_path %>
+          <span class="cs-muted"> · </span>
+          <a href="<%= contact[:cv] %>" download>CV</a>
+          <span class="cs-muted"> · </span>
+          <a href="mailto:<%= contact[:email] %>">Email</a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

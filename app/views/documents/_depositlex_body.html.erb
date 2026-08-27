@@ -1,0 +1,631 @@
+<div class="doc">
+
+  <!-- ============================ COVER ============================ -->
+  <header class="cover">
+    <span class="eyebrow">Product case study &middot; AI legal intelligence</span>
+    <h1>DepositLex</h1>
+    <p class="lede">A knowledge base of US deposit law that keeps itself current — three Claude agents that research, then adversarially fact-check each other, then write strict JSON. Nothing reaches the library until a person accepts it, which is the whole product.</p>
+
+    <div class="cover-meta">
+      <div><span class="k">Role</span><span class="v">Product &amp; engineering lead</span></div>
+      <div><span class="k">Timeline</span><span class="v">Jun &ndash; Aug 2026, 9 commits</span></div>
+      <div><span class="k">Scope</span><span class="v">51 US jurisdictions, 106 seeded articles</span></div>
+      <div><span class="k">Status</span><span class="v">Running; Render deploy configured</span></div>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/depositlex/dashboard-pending.webp" alt="DepositLex dashboard showing 106 articles, 52 jurisdictions, 3 proposals pending review, and a Proposed updates panel listing three AI proposals with change type, confidence, jurisdiction and accept / review / decline actions.">
+      <figcaption><span class="fignum">Fig. 1</span>The reviewer's console. Four counters, a search box scoped to one jurisdiction, and an inbox of proposals — each carrying its change type, the model's own confidence, and the three actions that decide it. <span class="fixture">The proposals shown throughout are hand-built fixtures, not model output</span>; see the note at the end of section 05.</figcaption>
+    </figure>
+  </header>
+
+  <!-- ============================ 01 ============================ -->
+  <section id="summary">
+    <div class="row">
+      <div class="rail"><span class="sec-num">01</span><span class="rail-note">Executive<br>summary</span></div>
+      <div>
+        <div class="sec-head"><h2>Executive summary</h2></div>
+        <div class="body">
+          <p>DepositLex maintains a living reference on the law governing rental-property deposits across all 51 US jurisdictions — trust and escrow account requirements, signatory controls, deposit caps, interest, return and deduction rules, escheatment of unclaimed funds, and deposit-replacement products.</p>
+          <p>Keeping that current by hand is the problem. Fifty-one legislatures and their agencies move independently; nobody reads all of them. So the product runs a research pipeline against the live web and turns what it finds into <strong>proposals</strong> — a queue of suggested new articles and suggested edits, each with a rationale, a confidence level, primary-source citations, and for edits a field-by-field before/after. A human accepts, edits, or declines. Nothing is written automatically, ever.</p>
+          <p>That constraint is the product. An AI that silently rewrites a compliance reference is a liability; an AI that drafts and defers is a research assistant. Everything in the architecture follows from choosing the second.</p>
+        </div>
+
+        <div class="stats">
+          <div><div class="stat-n">3</div><div class="stat-k">Agents per run — research, validate, structure</div></div>
+          <div><div class="stat-n">106</div><div class="stat-k">Seeded articles across 52 jurisdictions</div></div>
+          <div><div class="stat-n">128<span style="font-size:1.3rem">K</span></div><div class="stat-k">Max output tokens, every stage, streamed</div></div>
+          <div><div class="stat-n">0</div><div class="stat-k">Tests — the finding this document ends on</div></div>
+        </div>
+
+        <div class="body" style="margin-top:2rem">
+          <div class="callout">
+            <span class="eyebrow">The one-line version</span>
+            <p>We built a legal-research agent whose output is a review queue rather than a commit, spent the engineering effort on making a long-running model call survive the real world — tool budgets, timeouts, streaming, strict schemas — and then shipped it with no automated test of the one method that writes to the knowledge base.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 02 ============================ -->
+  <section id="context">
+    <div class="row">
+      <div class="rail"><span class="sec-num">02</span><span class="rail-note">Context<br>&amp; problem</span></div>
+      <div>
+        <div class="sec-head"><h2>Context and the problem</h2></div>
+        <div class="body">
+          <h3>Why a reference document rots</h3>
+          <p>The knowledge base is seeded from an existing 50-state-and-D.C. compliance reference on deposit bank-account requirements. It is genuinely useful and it starts decaying the day it is published. A single legislature amending a code section is enough to make one row wrong, and the row looks exactly as authoritative as it did the day before.</p>
+          <p>Three properties of this specific problem shaped the build:</p>
+        </div>
+
+        <div class="full tw">
+          <table>
+            <thead><tr><th style="width:24%">Property</th><th style="width:38%">What it rules out</th><th>What it forces</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="t">Being wrong is worse than being late</span></td>
+                <td>Any design where the model writes directly. A confidently wrong deposit cap propagates into operational policy and does damage that a stale entry does not.</td>
+                <td>A proposal queue with a human gate, and a validation stage whose instruction is that dropping an unverified item beats passing it on.</td>
+              </tr>
+              <tr>
+                <td><span class="t">Snippets are not sources</span></td>
+                <td>A search-only agent. Search results give summaries of law; the specifics that matter — effective dates, thresholds, scope — live in the statute page itself.</td>
+                <td><code>web_fetch</code> alongside <code>web_search</code>, and a prompt that requires opening the primary source before reporting a detail.</td>
+              </tr>
+              <tr>
+                <td><span class="t">Tomorrow's law matters today</span></td>
+                <td>Treating "the law" as only what is in force. An operator needs the six months of warning that an enacted-not-yet-effective statute gives them.</td>
+                <td>A four-state lifecycle on every article — in force, enacted but not in force, proposed, consultation — carried through the schema, the review form and the UI chips.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="row" style="margin-top:2.5rem; grid-template-columns:1fr; gap:0">
+          <div class="body">
+            <h3>The two users</h3>
+          </div>
+        </div>
+
+        <div class="full tw">
+          <table>
+            <thead><tr><th style="width:22%">User</th><th style="width:34%">Job to be done</th><th>How the product serves it</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="t">Reviewer</span><span class="s">Compliance / legal ops</span></td>
+                <td>&ldquo;Tell me what changed in my area of law, show me the source, and let me decide whether it goes in.&rdquo;</td>
+                <td>A queue of proposals with rationale, confidence and citations; accept as-is, edit before applying, or decline. Every decision is stamped with who made it and when.</td>
+              </tr>
+              <tr>
+                <td><span class="t">Consumer of the library</span><span class="s">Operations, support, product</span></td>
+                <td>&ldquo;What are the rules in Texas, and can I trust this page?&rdquo;</td>
+                <td>A searchable, filterable library where every article carries its jurisdiction, category, statutory citation, effective date, last-reviewed timestamp, and a standing &ldquo;not legal advice&rdquo; qualification.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 03 ============================ -->
+  <section id="product">
+    <div class="row">
+      <div class="rail"><span class="sec-num">03</span><span class="rail-note">Capability<br>map</span></div>
+      <div>
+        <div class="sec-head"><h2>What the product does</h2></div>
+        <div class="body">
+          <p>Four tables carry the whole product: articles, proposals, search runs, users. Everything below is live in the running application.</p>
+        </div>
+
+        <div class="full tw">
+          <table>
+            <thead><tr><th style="width:22%">Capability</th><th style="width:38%">What it does</th><th>Notable mechanics</th></tr></thead>
+            <tbody>
+              <tr><td><span class="t">Scoped search</span></td><td>Runs a research pipeline against one jurisdiction, optionally narrowed to a topic.</td><td>One jurisdiction per run, deliberately — depth over breadth, and it keeps the structured-output vocabulary honest.</td></tr>
+              <tr><td><span class="t">Three-agent pipeline</span></td><td>Research the web, adversarially verify the brief, then convert it to strict JSON.</td><td>Three separate API calls so each gets a fresh server-tool budget. See section 04.</td></tr>
+              <tr><td><span class="t">Proposal queue</span></td><td>Every finding lands as a reviewable proposal, never as a write.</td><td>Change type, confidence, rationale and citations are required fields of the output schema, not optional decoration.</td></tr>
+              <tr><td><span class="t">Before/after diff</span></td><td>For an edit, shows each of nine article fields as unchanged or changed.</td><td>Compares the proposal against the live article at render time, so a diff can never go stale.</td></tr>
+              <tr><td><span class="t">Edit before applying</span></td><td>The reviewer can rewrite anything the model proposed, then accept their version.</td><td>Overrides are merged over the proposal inside the accept transaction — one code path for both accept and accept-with-edits.</td></tr>
+              <tr><td><span class="t">Lifecycle status</span></td><td>Marks whether an item is in force, enacted, proposed, or out for consultation.</td><td>In-force law gets no chip; only upcoming law is highlighted, so the eye goes to what needs a diary entry.</td></tr>
+              <tr><td><span class="t">Run log</span></td><td>Every run keeps its status, duration, model, verified brief and source list.</td><td>The brief is retained even when a run produces zero proposals — the reasoning is the output too.</td></tr>
+              <tr><td><span class="t">Live updates</span></td><td>Proposals appear on the dashboard as the job finishes, without a refresh.</td><td>Turbo Streams broadcast from the job; the same partials render the initial page and the update.</td></tr>
+              <tr><td><span class="t">Library</span></td><td>Full-text search plus jurisdiction and category filters over the knowledge base.</td><td>Slugs are the public identifier, so an accepted proposal keeps a stable URL.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <figure>
+          <img src="/case-studies/img/depositlex/library.webp" alt="Knowledge base grid showing 107 articles as cards, each tagged with jurisdiction and category, with search and filter controls above.">
+          <figcaption><span class="fignum">Fig. 2</span>The library, seeded from the 50-state compliance reference: two articles per jurisdiction (trust/bank-account requirements, and escheatment of unclaimed deposits) plus four cross-cutting pieces. The top-left card is the one article here that did not come from the seed: it arrived through the product's own review flow, accepted from the queue while these screenshots were being taken (section 05).</figcaption>
+        </figure>
+
+        <figure>
+          <img src="/case-studies/img/depositlex/article.webp" alt="Article page for Deposit trust and bank account requirements — California, showing jurisdiction and category chips, a reviewed timestamp, summary, sections on account requirements, signatory controls, owner/operator distinctions, restrictions, statutory reference and a not-legal-advice disclaimer.">
+          <figcaption><span class="fignum">Fig. 3</span>An article. The structure is the same for all 51 jurisdictions, which is what makes them comparable — and what lets the research agent be handed a compact digest of the whole library as context. Every page carries the reviewed date and the standing qualification that this is a reference tool, not advice.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 04 ============================ -->
+  <section id="pipeline">
+    <div class="row">
+      <div class="rail"><span class="sec-num">04</span><span class="rail-note">The<br>pipeline</span></div>
+      <div>
+        <div class="sec-head"><h2>Three agents, not one prompt</h2></div>
+        <div class="body">
+          <p>The first version was two phases: research, then structure. It became three when it became clear that the failure mode that mattered was not a malformed response — the schema already prevented that — but a <em>well-formed proposal built on a claim nobody had checked</em>.</p>
+        </div>
+
+        <div class="full pipe">
+          <div>
+            <span class="n">Stage 1</span>
+            <span class="t">Research</span>
+            <span class="s">Searches broadly, then opens the primary source in full before reporting any specific. Writes a sourced brief.</span>
+            <span class="b">web_search &times;30 &nbsp;·&nbsp; web_fetch &times;20</span>
+          </div>
+          <div>
+            <span class="n">Stage 2</span>
+            <span class="t">Validate</span>
+            <span class="s">A separate agent, told to be adversarial: re-opens the sources itself, corrects what they contradict, drops what it cannot ground.</span>
+            <span class="b">web_search &times;12 &nbsp;·&nbsp; web_fetch &times;18</span>
+          </div>
+          <div>
+            <span class="n">Stage 3</span>
+            <span class="t">Structure</span>
+            <span class="s">No web access. Converts the verified brief plus the current library into schema-valid JSON proposals.</span>
+            <span class="b">json_schema &nbsp;·&nbsp; 14 required fields</span>
+          </div>
+        </div>
+
+        <div class="body" style="margin-top:1.5rem">
+          <p>Three separate requests is the point, not an implementation detail. Each request gets its own server-tool allowance, so one flaky search cannot exhaust the budget for the whole run — a failure that had already produced a <code>server tool use limit exceeded</code> in practice. Splitting also lets each stage carry a different system prompt and a different disposition: the researcher is thorough, the validator is sceptical, the editor is precise.</p>
+          <p>Stage 3 has no web tools for a specific reason: citations from server-side search are incompatible with structured outputs. Rather than compromise on either, the pipeline separates them — evidence gathering happens where tools work, and schema enforcement happens where it works.</p>
+        </div>
+
+        <div class="body" style="margin-top:2rem">
+          <h3>What a long model call needs to survive</h3>
+          <p>Most of the engineering here is not prompt-writing. It is the unglamorous work of keeping a twenty-minute API call alive and bounded.</p>
+        </div>
+
+        <div class="full tw">
+          <table>
+            <thead><tr><th style="width:22%">Mechanism</th><th style="width:36%">Why it is there</th><th>Setting</th></tr></thead>
+            <tbody>
+              <tr><td><span class="t">Streaming</span></td><td>A 128K-token, high-effort call with many tool round-trips exceeds the SDK's non-streaming ceiling outright.</td><td>Every stage streams and reads the accumulated message, keeping the same response shape downstream.</td></tr>
+              <tr><td><span class="t">Raised timeout</span></td><td>The Ruby SDK's 600-second default does <em>not</em> auto-extend for streaming, unlike its TypeScript and Java siblings. Calls that legitimately ran past ten minutes were aborted client-side, then retried.</td><td><span class="num">1,800s</span> per request, <span class="num">1</span> retry — so a genuinely stuck call cannot burn three times the wall clock.</td></tr>
+              <tr><td><span class="t">Prompt caching</span></td><td>All three stages carry the same library digest. Sending it three times uncached is pure waste.</td><td>The role prompt and the digest sit in a cached block; the volatile brief does not.</td></tr>
+              <tr><td><span class="t">Bounded context</span></td><td>The library will outgrow the context window long before it outgrows the business.</td><td>The digest is capped at 120 articles, one compact line each — slug, jurisdiction, category, date, title, summary.</td></tr>
+              <tr><td><span class="t">Short-circuit</span></td><td>If research cites no sources, validation and structuring have nothing to work with and every proposal needs a citation anyway.</td><td>Return early with the brief intact, rather than spending two more max-token calls to produce nothing.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <figure>
+          <img src="/case-studies/img/depositlex/run-completed.webp" alt="Search run page showing a completed California run that took 847 seconds on claude-opus-4-8, a research brief with verified findings and a note on what was dropped during validation, followed by the two proposals it produced.">
+          <figcaption><span class="fignum">Fig. 4</span>A completed run keeps its verified brief, not just its output. The &ldquo;dropped during validation&rdquo; line is the visible trace of stage 2 doing its job — a claim that survived research and did not survive fact-checking. <span class="fixture">Fixture data</span>; a real run records the same fields.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 05 ============================ -->
+  <section id="review">
+    <div class="row">
+      <div class="rail"><span class="sec-num">05</span><span class="rail-note">The review<br>surface</span></div>
+      <div>
+        <div class="sec-head"><h2>The review surface</h2></div>
+        <div class="body">
+          <p>This is where the product either earns trust or doesn't. A reviewer looking at a proposal has to answer three questions quickly: what is being claimed, where did it come from, and what exactly would change if I say yes.</p>
+        </div>
+
+        <figure>
+          <img src="/case-studies/img/depositlex/proposal-new.webp" alt="Proposal detail page for a new California article, showing New and High confidence chips, jurisdiction, category and effective date, the summary and full Markdown body, with Accept as-is, Edit before applying and Decline in the right column and a Sources panel beneath.">
+          <figcaption><span class="fignum">Fig. 5</span>A proposal for a new article. The right column never moves: accept, edit, decline, then the sources. The model's own confidence sits next to the change type rather than buried, because a medium-confidence proposal should be read differently from a high-confidence one. <span class="fixture">Fixture data.</span></figcaption>
+        </figure>
+
+        <div class="body" style="margin-top:2.5rem">
+          <h3>Accepting is one path, with or without edits</h3>
+          <p>&ldquo;Edit before applying&rdquo; loads the proposed values into a form; saving submits them to the same accept endpoint as the plain Accept button, where they are merged over the proposal as overrides inside a single transaction. There is no second write path to keep in sync — which matters, because this is the only method in the application that mutates the knowledge base.</p>
+          <p>Accepting an edit proposal updates the existing article in place. Accepting a new-article proposal creates one, slugs it, stamps it reviewed, and records who decided. A proposal that names an article which no longer exists is downgraded to a new-article proposal rather than failing — one of several small decisions that keep a stale queue usable.</p>
+        </div>
+
+        <div class="fig-pair">
+          <figure>
+            <img src="/case-studies/img/depositlex/proposal-edit.webp" alt="Edit form pre-filled with the proposed title, jurisdiction, category, summary and Markdown body, with a note that saving will update the existing article.">
+            <figcaption><span class="fignum">Fig. 6</span>Edit before applying. The form states which of the two things saving will do. <span class="fixture">Fixture data.</span></figcaption>
+          </figure>
+          <figure>
+            <img src="/case-studies/img/depositlex/proposal-accepted.webp" alt="Proposal page in accepted state showing who accepted it and when, with a View article button.">
+            <figcaption><span class="fignum">Fig. 7</span>After a decision, the actions are replaced by the record of who made it. <span class="fixture">Fixture data.</span></figcaption>
+          </figure>
+        </div>
+
+        <figure>
+          <img src="/case-studies/img/depositlex/library-filtered.webp" alt="Knowledge base filtered to Texas escheatment articles.">
+          <figcaption><span class="fignum">Fig. 8</span>The library filtered by jurisdiction and free text. The filters exist because the useful question is almost never &ldquo;what changed everywhere&rdquo; but &ldquo;what applies in the state I am being asked about&rdquo;.</figcaption>
+        </figure>
+
+        <div class="body" style="margin-top:2.5rem">
+          <div class="callout evidence">
+            <span class="eyebrow">A note on the data in these screenshots</span>
+            <p>Producing genuine proposals requires a live, billed pipeline run of roughly ten to thirty minutes, which was not performed for this document. The proposals in figures 1, 4, 5, 6 and 7 are therefore fixtures inserted directly into the database to exercise the review interface. Their legal content is copied verbatim from this repository's own original seed file, which the July 2026 seed rewrite removed — so nothing about the law has been invented here, and none of it should be read as model output. Everything <em>other</em> than the proposals — the 106-article library, the failed run, the validation error in section 08 — is the application behaving normally.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 06 ============================ -->
+  <section id="hard-part">
+    <div class="row">
+      <div class="rail"><span class="sec-num">06</span><span class="rail-note">The<br>hard part</span></div>
+      <div>
+        <div class="sec-head"><h2>The hard part: making model output safe to write down</h2></div>
+        <div class="body">
+          <p>The gap between &ldquo;the model produced something plausible&rdquo; and &ldquo;this can go into a compliance reference&rdquo; is where the design work lives. Four mechanisms close it, and each one costs something.</p>
+        </div>
+
+        <div class="full tw">
+          <table>
+            <thead><tr><th style="width:20%">Mechanism</th><th style="width:32%">What it guarantees</th><th>What it costs</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="t">Strict output schema</span></td>
+                <td>Fourteen required fields per proposal, no additional properties, enums bound to the application's own vocabularies. Parsing cannot fail on shape.</td>
+                <td>The stage that enforces it cannot use web tools, so evidence and structure must be separate calls.</td>
+              </tr>
+              <tr>
+                <td><span class="t">Adversarial validation</span></td>
+                <td>A second model pass whose instruction is explicit that letting an unverified item through is worse than dropping it.</td>
+                <td>Roughly a third more wall-clock and tokens per run, spent entirely on removing work rather than producing it.</td>
+              </tr>
+              <tr>
+                <td><span class="t">Mandatory citation</span></td>
+                <td>Every proposal must carry at least one source URL, and the run keeps the full list of what was actually fetched.</td>
+                <td>Genuinely uncitable findings — a change reported only in trade press — are dropped rather than flagged.</td>
+              </tr>
+              <tr>
+                <td><span class="t">The human gate</span></td>
+                <td>No path exists from the model to the library that does not pass through a person clicking accept.</td>
+                <td>The system's throughput is a reviewer's attention. It scales with headcount, not with the API.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="body" style="margin-top:2rem">
+          <h3>Defensive parsing, even behind a schema</h3>
+          <p>The structure stage returns guaranteed-valid JSON, and the parser still strips code fences, still falls back to the outermost braces, still rescues a parse error into an empty result, still coerces an unknown confidence value to <code>medium</code> and an unknown lifecycle status to <code>in_force</code>, and still re-resolves the named target article rather than trusting the slug. None of that should be reachable. All of it is cheap, and the alternative to a defensive default here is a background job that dies and a reviewer who never learns why.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 07 ============================ -->
+  <section id="incidents">
+    <div class="row">
+      <div class="rail"><span class="sec-num">07</span><span class="rail-note">Two<br>failures</span></div>
+      <div>
+        <div class="sec-head"><h2>Two failures worth the space</h2></div>
+        <div class="body">
+          <h3>1 &mdash; The run that returned UK law tagged as New York</h3>
+          <p>The structure stage constrains <code>jurisdiction</code> to an enum drawn from the application's own vocabulary. When that vocabulary was widened from three values to the 51 US jurisdictions, one consequence was not obvious: a search scoped to a jurisdiction <em>outside</em> the enum still researched perfectly well, and then the model was forced to pick some allowed value for its findings.</p>
+          <p>A run scoped to England &amp; Wales therefore produced accurate research on UK tenancy deposit law, correctly cited, and labelled New York. Every individual component behaved as designed. The composition of a free-text scope with a closed output vocabulary was the defect, and it produced the worst possible failure for this product: <strong>confident, well-sourced, wrong-jurisdiction content arriving in the review queue looking exactly like a good proposal.</strong></p>
+          <p>The fix is four lines — validate the run's jurisdiction against the same vocabulary the schema uses, on create only so historical runs recorded under the old list stay saveable. The lesson is larger than the fix: when a model is given a closed set to choose from, it will choose from it, and the guard belongs at the point where the scope is set rather than where the output is read.</p>
+        </div>
+
+        <div class="body" style="margin-top:2.5rem">
+          <h3>2 &mdash; The deployment where the jobs never ran</h3>
+          <p>Production runs its background work on Solid Queue. The container image was still the SQLite scaffold Rails generates, and its only process was the web server. The queue supervisor is enabled by an environment variable that was set only in an unused deployment file — so every search a user started sat in the ready-executions table forever, while the dashboard cheerfully said &ldquo;runs in the background&rdquo;.</p>
+          <p>Two more problems were tangled in the same image. A single mis-specified copy instruction shipped the host-built gem bundle into the final image. And the base layer installed a SQLite client and no Postgres client, which worked only because the lockfile happened to pin a precompiled gem that vendors its own library — a fall back to the source gem would have failed the build outright.</p>
+        </div>
+
+        <div class="full tw">
+          <table>
+            <thead><tr><th style="width:26%">Symptom</th><th style="width:32%">Cause</th><th>After</th></tr></thead>
+            <tbody>
+              <tr><td><span class="t">Searches never completed</span><span class="s">Stuck at &ldquo;pending&rdquo; forever</span></td><td>No queue worker in the image; the supervisor flag lived in an unused deploy file.</td><td>Supervisor runs inside the web process. Verified both ways — zero worker processes before, job drains after.</td></tr>
+              <tr><td><span class="t">Build context 368 MB</span><span class="s">Image 2.21 GB</span></td><td>A copy instruction that copied a directory's <em>contents</em> rather than the directory, dragging in the host gem bundle.</td><td><span class="num">303 kB</span> context, <span class="num">981 MB</span> image — a 55% reduction.</td></tr>
+              <tr><td><span class="t">Wrong database client</span><span class="s">Latent build failure</span></td><td>SQLite CLI installed, no Postgres client, on a Postgres deployment.</td><td>Correct client installed; the test-group gems excluded from the image entirely.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="body" style="margin-top:2rem">
+          <div class="callout">
+            <span class="eyebrow">What both have in common</span>
+            <p>Neither failure was in the interesting part of the system. One was a vocabulary mismatch between two places that both looked right on their own; the other was a scaffold nobody had revisited after the architecture moved underneath it. For a product whose novelty is the model pipeline, it is worth noticing that both of the real outages came from the boring half.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 08 ============================ -->
+  <section id="operating">
+    <div class="row">
+      <div class="rail"><span class="sec-num">08</span><span class="rail-note">Findings<br>from use</span></div>
+      <div>
+        <div class="sec-head"><h2>What operating it revealed</h2></div>
+        <div class="body">
+          <p>The screenshots in this document were produced by running the application, signing in and using it. Doing so surfaced four defects that reading the code alone would not have made vivid — including one that quietly undercuts the product's central promise.</p>
+        </div>
+
+        <figure>
+          <img src="/case-studies/img/depositlex/proposal-diff.webp" alt="Proposal diff view. The summary field shows a before and after that differ. The body field shows before and after blocks whose visible text is identical, both truncated mid-sentence at the same point. Seven further fields each read 'No change'.">
+          <figcaption><span class="fignum">Fig. 9</span>The diff, and the problem with it. The <em>body</em> row is the one that matters — and both sides show the same 280 characters, truncated mid-sentence, because the change is further down the document. The reviewer is being asked to approve an edit to the article body while looking at two identical excerpts. Below it, seven fields that did not change take up more vertical space than the two that did.</figcaption>
+        </figure>
+
+        <div class="full tw">
+          <table>
+            <thead><tr><th style="width:15%"></th><th style="width:32%">Defect</th><th>Consequence</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="tag crit">Core</span></td>
+                <td>The body diff truncates both sides to 280 characters of flattened Markdown, with no alignment to the changed region and no word-level highlighting.</td>
+                <td>For any edit below the first paragraph — which is most of them — the reviewer approves a change they cannot see. The human gate is intact; the information the gate depends on is not.</td>
+              </tr>
+              <tr>
+                <td><span class="tag crit">Trust</span></td>
+                <td>A run with no proposals always renders &ldquo;No proposals were produced — the knowledge base was already current for this scope.&rdquo; The copy does not branch on the run's status.</td>
+                <td>A <em>failed</em> run tells the reviewer the law is unchanged. For a monitoring product, telling someone &ldquo;nothing has changed&rdquo; when in fact nothing was checked is the single most damaging sentence in the interface.</td>
+              </tr>
+              <tr>
+                <td><span class="tag warn">Broken</span></td>
+                <td>The sidebar &ldquo;Run AI search&rdquo; button posts with no parameters. Jurisdiction became required in July; the button was not updated.</td>
+                <td>The call to action on every page, and one of the two entry points the README documents, fails every time with &ldquo;Jurisdiction can't be blank&rdquo;.</td>
+              </tr>
+              <tr>
+                <td><span class="tag warn">One-way</span></td>
+                <td>Archiving an article is a soft delete with no route back: the index shows only published articles and no un-archive control exists, though the scope does.</td>
+                <td>A mis-click is unrecoverable from the interface, in a product whose entire premise is that destructive actions should be reversible and reviewed.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="fig-pair">
+          <figure>
+            <img src="/case-studies/img/depositlex/run-failed.webp" alt="A failed search run showing the error ANTHROPIC_API_KEY is not set, and beneath it the line 'No proposals were produced — the knowledge base was already current for this scope.'">
+            <figcaption><span class="fignum">Fig. 10</span>Both halves of this page are real output. The failure is reported honestly at the top and contradicted at the bottom.</figcaption>
+          </figure>
+          <figure>
+            <img src="/case-studies/img/depositlex/sidebar-cta-error.webp" alt="Dashboard showing a red validation banner reading 'Jurisdiction can't be blank' after using the sidebar Run AI search button.">
+            <figcaption><span class="fignum">Fig. 11</span>The sidebar call to action, reproduced. It cannot start a search.</figcaption>
+          </figure>
+        </div>
+
+        <div class="body" style="margin-top:2.5rem">
+          <h3>And the one that isn't visible at all</h3>
+          <p>The application has <strong>no tests</strong>. Four test files exist; each contains a commented-out example from the Rails generator, and the fixtures still read <code>MyString</code>. Continuous integration runs a test job on every push and it passes, because a suite of zero tests always does. The green tick certifies static security scanning, dependency auditing and lint — and nothing whatsoever about behaviour.</p>
+          <p>The method that writes to the knowledge base — the one that merges reviewer overrides, decides between creating and updating, stamps the reviewer, and does it in a transaction — has never been executed by an automated check. I ran it by hand while producing figure 7; it worked. That is the entire body of evidence.</p>
+          <p>The reviewer role is also still notional. The user model carries a role and an <code>admin?</code> predicate, and nothing yet reads them — so &ldquo;a person accepted this&rdquo; is currently a claim about the deployment rather than something the application enforces. For a product whose entire argument is the human gate, the gate needs to know who is standing at it. That is section 11, item 1.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 09 ============================ -->
+  <section id="decisions">
+    <div class="row">
+      <div class="rail"><span class="sec-num">09</span><span class="rail-note">Decisions<br>&amp; trade-offs</span></div>
+      <div>
+        <div class="sec-head"><h2>Decisions and trade-offs</h2></div>
+
+        <div class="full tw">
+          <table>
+            <thead><tr><th style="width:20%">Decision</th><th style="width:25%">Why</th><th style="width:25%">What it cost</th><th>Verdict</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="t">Propose, never write</span></td>
+                <td>A compliance reference that an unattended model can edit is a liability, not an asset.</td>
+                <td>Throughput is bounded by reviewer attention; a busy week means a stale library and a growing queue.</td>
+                <td><span class="tag good">Right call</span><span class="s">It is the product, not a safety feature bolted on.</span></td>
+              </tr>
+              <tr>
+                <td><span class="t">Three agents rather than one</span></td>
+                <td>Fresh tool budgets per stage, and a validator that can be told to be hostile to the researcher's output.</td>
+                <td>Roughly triple the tokens and wall clock; a run takes ten to thirty minutes.</td>
+                <td><span class="tag good">Right call</span><span class="s">Accuracy was explicitly chosen over speed, and the job is asynchronous anyway.</span></td>
+              </tr>
+              <tr>
+                <td><span class="t">One jurisdiction per run</span></td>
+                <td>Depth, and it keeps the research scope aligned with the closed output vocabulary.</td>
+                <td>Covering all 51 states is 51 runs. Nothing in the product orchestrates that.</td>
+                <td><span class="tag warn">Right, incomplete</span><span class="s">The scheduling layer this implies was never built.</span></td>
+              </tr>
+              <tr>
+                <td><span class="t">Vocabularies as string columns</span></td>
+                <td>Jurisdictions and categories stay easy to seed, and the schema can bind an enum straight to them.</td>
+                <td>Widening the list is a code change, and the mismatch in section 07 was only possible because two places held the same list.</td>
+                <td><span class="tag good">Right at this size</span><span class="s">Revisit when non-US jurisdictions arrive.</span></td>
+              </tr>
+              <tr>
+                <td><span class="t">Solid Queue, Cache and Cable on one Postgres</span></td>
+                <td>Background jobs, caching and live updates with no Redis to run or pay for.</td>
+                <td>The queue worker rides inside the web process, so it does not survive scaling past one instance.</td>
+                <td><span class="tag good">Right call</span><span class="s">The Dockerfile even says where to split it.</span></td>
+              </tr>
+              <tr>
+                <td><span class="t">Ship without tests</span></td>
+                <td>Nine commits over two months, one developer, everything verified by hand.</td>
+                <td>No regression safety on the write path, and a CI badge that means less than it appears to.</td>
+                <td><span class="tag crit">Wrong call</span><span class="s">The cheapest possible test — accept a proposal, assert the article — was never written.</span></td>
+              </tr>
+              <tr>
+                <td><span class="t">No cost controls</span></td>
+                <td>Not a decision so much as an omission; the product was built for a single trusted reviewer.</td>
+                <td>A run is three high-effort calls with a large web-tool budget, so spend scales with use and nothing meters it. Fine for one trusted reviewer; not a property you can carry into a team.</td>
+                <td><span class="tag crit">Must fix before real users</span><span class="s">Metering has to land before the second reviewer does, not after.</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 10 ============================ -->
+  <section id="delivery">
+    <div class="row">
+      <div class="rail"><span class="sec-num">10</span><span class="rail-note">Delivery<br>record</span></div>
+      <div>
+        <div class="sec-head"><h2>Delivery record</h2></div>
+
+        <div class="stats" style="margin-top:0">
+          <div><div class="stat-n">9</div><div class="stat-k">Commits, 4 Jun to 4 Aug 2026</div></div>
+          <div><div class="stat-n">4</div><div class="stat-k">Domain tables, 8 migrations</div></div>
+          <div><div class="stat-n">486</div><div class="stat-k">Lines in the pipeline service — 45% of the app's Ruby</div></div>
+          <div><div class="stat-n">1,103</div><div class="stat-k">Lines of seeded reference data</div></div>
+        </div>
+
+        <div class="full tw" style="margin-top:2rem">
+          <table>
+            <thead><tr><th style="width:22%">Phase</th><th style="width:16%">When</th><th>Focus</th></tr></thead>
+            <tbody>
+              <tr><td><span class="t">Foundation</span></td><td class="num">4 Jun 2026</td><td>The whole application in one commit: articles, proposals, runs, the reviewer dashboard, and a two-phase Claude pipeline. Then Postgres, Solid Queue/Cache/Cable, and streaming — three commits in a day.</td></tr>
+              <tr><td><span class="t">Depth</span></td><td class="num">25 Jun 2026</td><td>Primary-source fetching, upcoming-legislation coverage and the four-state lifecycle; the split into three agents; the SDK timeout fix. The pipeline reaches its current shape.</td></tr>
+              <tr><td><span class="t">Real data</span></td><td class="num">28 Jul 2026</td><td>Six invented demo articles replaced by 106 built from the 50-state compliance reference; the jurisdiction and category vocabularies rebuilt around it; the scope-validation fix from section 07.</td></tr>
+              <tr><td><span class="t">Deployment</span></td><td class="num">4 Aug 2026</td><td>The Docker image rebuilt for Postgres and Solid Queue. Background jobs actually run.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="body" style="margin-top:2rem">
+          <p>Nine commits is an unusual shape for a working product, and it is worth being honest about what it means. The commit messages carry the reasoning that would normally live in pull requests — the timeout commit explains the SDK's streaming behaviour, the Docker commit records the before-and-after image sizes and states how the queue fix was verified. That is good practice at this scale and stops working the moment a second person joins.</p>
+          <p>What the shape also shows is that every phase after the first was corrective: the pipeline got more careful, the data got real, the deployment got fixed. None of it was caught by a test, because there are none. The project's own quality investment went entirely into static analysis and dependency auditing — both wired into CI on day one — which catch a genuinely different class of problem from the ones that actually occurred.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 11 ============================ -->
+  <section id="next">
+    <div class="row">
+      <div class="rail"><span class="sec-num">11</span><span class="rail-note">What I<br>would do next</span></div>
+      <div>
+        <div class="sec-head"><h2>What I would do next</h2></div>
+        <div class="body">
+          <p>Ranked by risk removed per unit of effort. The first four are each an afternoon.</p>
+        </div>
+
+        <div class="full tw">
+          <table>
+            <thead><tr><th style="width:5%">#</th><th style="width:28%">Action</th><th style="width:45%">Why it matters</th><th>Type</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="rank">1</td>
+                <td><span class="t">Gate who can review</span></td>
+                <td>The whole claim of this product is that a person accepted each entry, so the application has to know which people may. Close registration and require a reviewer role on accept and decline — the role column and the predicate already exist and simply need to be read.</td>
+                <td><span class="tag crit">Critical</span></td>
+              </tr>
+              <tr>
+                <td class="rank">2</td>
+                <td><span class="t">Fix the failed-run copy</span></td>
+                <td>Telling a reviewer &ldquo;the knowledge base was already current&rdquo; when the run failed is the most harmful sentence the product can produce. Branch the empty state on status — one conditional.</td>
+                <td><span class="tag crit">Trust</span></td>
+              </tr>
+              <tr>
+                <td class="rank">3</td>
+                <td><span class="t">Make the body diff usable</span></td>
+                <td>The review gate is only as good as what the reviewer can see, and today the body diff shows two identical excerpts for most real edits. A line-level diff of the Markdown, scrolled to the first change, restores the product's core promise.</td>
+                <td><span class="tag crit">Core</span></td>
+              </tr>
+              <tr>
+                <td class="rank">4</td>
+                <td><span class="t">Cap and meter the spend</span></td>
+                <td>Each run is three high-effort calls with up to fifty web-tool uses, and nothing limits how many a user starts or prevents two identical runs at once. A per-user rate limit, a concurrency guard on jurisdiction, and recorded token usage per run.</td>
+                <td><span class="tag warn">Cost</span></td>
+              </tr>
+              <tr>
+                <td class="rank">5</td>
+                <td><span class="t">Test the write path first</span></td>
+                <td>Not a suite — three tests. Accepting a new proposal creates a slugged article; accepting an edit updates in place and records the reviewer; reviewer overrides beat the model's values. That covers the only method that can corrupt the library.</td>
+                <td><span class="tag warn">Quality</span></td>
+              </tr>
+              <tr>
+                <td class="rank">6</td>
+                <td><span class="t">Schedule the coverage</span></td>
+                <td>One jurisdiction per run and 51 jurisdictions means the library only stays current if someone remembers to run 51 searches. A recurring task that rotates through jurisdictions turns a manual habit into a property of the system — Solid Queue already supports it.</td>
+                <td><span class="tag warn">Product</span></td>
+              </tr>
+              <tr>
+                <td class="rank">7</td>
+                <td><span class="t">Fix the sidebar button</span></td>
+                <td>The call to action on every page always fails. Either carry a jurisdiction or make it a link to the dashboard form.</td>
+                <td><span class="tag">Bug</span></td>
+              </tr>
+              <tr>
+                <td class="rank">8</td>
+                <td><span class="t">Reconcile the user association</span></td>
+                <td>A run's user column is non-null in the database, optional on the model, and nullified on user deletion. Deleting a user who has ever run a search would raise. Pick one of the three and make the other two agree.</td>
+                <td><span class="tag">Latent</span></td>
+              </tr>
+              <tr>
+                <td class="rank">9</td>
+                <td><span class="t">Paginate the library and revisit the model pin</span></td>
+                <td>The index renders every published article in one response — fine at 107, not at 1,000. Separately, the pipeline pins a model that has since been superseded; re-benchmarking the three stages against the current generation is cheap and may change the budgets.</td>
+                <td><span class="tag">Hygiene</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="body" style="margin-top:2.5rem">
+          <div class="callout crit">
+            <span class="eyebrow">A note on outcome metrics</span>
+            <p>This document contains no accuracy figures — no proposal acceptance rate, no precision on legal claims, no measure of what validation catches. Those are the numbers that would actually prove the pipeline works, and they do not exist because no evaluation set exists. Building one is the honest next step beyond the list above: fifty known legal changes with known answers, replayed through the pipeline, scored on what it finds, what it misses, and what it asserts that is not true. Until that exists, everything in section 04 is a well-reasoned design, not a demonstrated result.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ APPENDIX ============================ -->
+  <section class="appendix" id="appendix">
+    <div class="row">
+      <div class="rail"><span class="sec-num">A</span><span class="rail-note">Appendix</span></div>
+      <div>
+        <div class="sec-head"><h2>Appendix</h2></div>
+
+        <div class="tw">
+          <table>
+            <thead><tr><th style="width:22%">Layer</th><th>Choice</th></tr></thead>
+            <tbody>
+              <tr><td><span class="t">Application</span></td><td>Ruby on Rails 8.1 on Ruby 3.2, Puma. SQLite in development, PostgreSQL in production.</td></tr>
+              <tr><td><span class="t">Model pipeline</span></td><td>Official Anthropic Ruby SDK. Claude Opus 4.8, adaptive thinking, high effort, 128K max output tokens, streamed. Server-side <code>web_search</code> and <code>web_fetch</code>; structured outputs via JSON schema on the final stage; ephemeral prompt caching on the shared prefix.</td></tr>
+              <tr><td><span class="t">Background work</span></td><td>Solid Queue, with the supervisor running inside Puma in production. Async adapter in development.</td></tr>
+              <tr><td><span class="t">Real time</span></td><td>Turbo Streams over Solid Cable — the same Postgres database, no Redis anywhere in the stack.</td></tr>
+              <tr><td><span class="t">Front end</span></td><td>Server-rendered ERB with Tailwind v4, Hotwire and import maps. Article bodies authored as Markdown, rendered with Kramdown and sanitised to an allow-list of tags.</td></tr>
+              <tr><td><span class="t">Authentication</span></td><td>Devise — database authentication, recoverable, rememberable, validatable. The reviewer-role layer is section 11, item 1.</td></tr>
+              <tr><td><span class="t">Quality</span></td><td>Brakeman, bundler-audit, importmap audit and RuboCop, all in CI. Minitest and Capybara are configured; no tests are written.</td></tr>
+              <tr><td><span class="t">Deployment</span></td><td>Multi-stage Docker image on Render, running as a non-root user behind Thruster. Kamal configuration also present.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="tw" style="margin-top:2rem">
+          <table>
+            <thead><tr><th style="width:45%">Screen</th><th>Shown in</th></tr></thead>
+            <tbody>
+              <tr><td>Reviewer dashboard</td><td class="num">Cover</td></tr>
+              <tr><td>Knowledge base &middot; Article</td><td class="num">Section 03</td></tr>
+              <tr><td>Completed run with verified brief</td><td class="num">Section 04</td></tr>
+              <tr><td>Proposal &middot; Edit before applying &middot; Accepted &middot; Filtered library</td><td class="num">Section 05</td></tr>
+              <tr><td>Before/after diff &middot; Failed run &middot; Sidebar validation error</td><td class="num">Section 08</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="body" style="margin-top:2.5rem" >
+          <p class="note">Screenshots were captured from a locally running instance on <code>main</code> at commit <code>41dfbde</code>, with the knowledge base seeded from the repository's own seed files. The proposal records in figures 1, 4, 5, 6 and 7 were inserted directly into the database to exercise the review interface; their legal content is copied from this repository's original seed file rather than authored here, and none of it is model output. All other screens are the application's normal behaviour, including both failure states. Technical claims throughout are drawn from the application source, its schema and its commit history; where this document states that something does not work, it was reproduced in the running application.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>

@@ -1,0 +1,21 @@
+<% content_for :title, "Work" %>
+<% content_for :description, "Four product case studies: a multilingual contact centre, a personal wealth platform, an AI legal-intelligence knowledge base, and a human-gated move-out automation prototype." %>
+
+<section class="mx-auto max-w-6xl px-6 pt-20 pb-14 sm:px-8 sm:pt-28">
+  <p class="eyebrow">Work</p>
+  <h1 class="mt-5 max-w-3xl font-display text-[2.6rem] font-semibold leading-[1.05] tracking-tight text-ink-950 sm:text-[3.6rem]">
+    Four case studies, written the way I'd want to read one
+  </h1>
+  <p class="mt-6 max-w-2xl text-[1.06rem] leading-relaxed text-ink-500">
+    Each one covers the product decisions and what they cost, a failure worth the space, and a
+    ranked list of what I would do next. All four are written up in full on this site.
+  </p>
+</section>
+
+<section class="border-t border-ink-100 bg-panel">
+  <div class="mx-auto max-w-6xl space-y-20 px-6 py-20 sm:space-y-24 sm:px-8 sm:py-24">
+    <% @case_studies.each_with_index do |case_study, i| %>
+      <%= render "shared/case_study_card", case_study: case_study, reverse: i.odd? %>
+    <% end %>
+  </div>
+</section>

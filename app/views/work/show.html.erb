@@ -1,0 +1,9 @@
+<% content_for :title, @case_study.title %>
+<% content_for :description, @case_study.summary %>
+
+<%# Each study brings its own fonts and stylesheet; hoist them into <head> so the
+    markup stays valid and the site chrome picks up that study's palette. %>
+<% content_for :head do %>
+  <%= render "#{@case_study.document_partial}_head" %>
+<% end %>
+<%= render "#{@case_study.document_partial}_body" %>

@@ -1,0 +1,451 @@
+<div class="doc">
+
+  <!-- ============================ COVER ============================ -->
+  <header class="cover">
+    <span class="eyebrow">Product case study &middot; Workflow automation prototype</span>
+    <h1>Move-Out<br>Copilot</h1>
+    <p class="lede">A four-stage Claude pipeline that reads a resident's move-out statement, matches it to an account, classifies the move-out, reconciles the money, and then stops — handing a fully worked draft to a person, because the next step moves someone's deposit.</p>
+
+    <div class="cover-meta">
+      <div><span class="k">Role</span><span class="v">Product &amp; engineering lead</span></div>
+      <div><span class="k">Built</span><span class="v">Jul 2026, one commit on <code>main</code></span></div>
+      <div><span class="k">Purpose</span><span class="v">De-risk a production integration</span></div>
+      <div><span class="k">Status</span><span class="v">Sandboxed demo; no live connection</span></div>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/move-out-copilot/review-transfer.webp" alt="Move-Out Copilot review screen: the statement PDF on the left; on the right, extracted fields, the matched account, the classification as a unit transfer, reconciliation showing all checks passed, and a proposed outcome of transfer complete with an Approve and Process button.">
+      <figcaption><span class="fignum">Fig. 1</span>The review screen, and the whole argument of the product in one layout. The source document stays on the left so a reviewer can check any figure against it; the four pipeline stages report down the right in the order they ran; the proposed status, sub-status and notification sit above the only button that does anything irreversible.</figcaption>
+    </figure>
+  </header>
+
+  <!-- ============================ 01 ============================ -->
+  <section id="summary">
+    <div class="opener"><span class="secnum">01</span><h2>Executive summary</h2></div>
+
+    <div class="col">
+      <p>When a resident moves out, someone has to read the property manager's move-out statement, find the matching deposit account, work out which of several workflows applies, check the figures, set a status, and fire a notification. It is repetitive, it is unambiguous most of the time, and it moves money — which makes it an almost ideal automation candidate and a genuinely dangerous one.</p>
+      <p>Move-Out Copilot is a standalone Rails demo that runs that whole process against a sandbox: seeded mock accounts, no connection to the production platform, and a status engine that is a direct port of the rules the real system already applies. Upload a statement and four agents run in sequence; a person then reviews a fully pre-filled draft and decides whether it happens.</p>
+      <p>It exists to answer a question that a design document cannot: <strong>would a reviewer actually trust this, and what does the screen need to show before they would?</strong></p>
+    </div>
+
+    <div class="stats">
+      <div><div class="stat-n">4</div><div class="stat-k">Agents — extract, match, classify, reconcile</div></div>
+      <div><div class="stat-n">2</div><div class="stat-k">Model tiers, chosen per stage by cost of error</div></div>
+      <div><div class="stat-n">7</div><div class="stat-k">Sample statements covering every branch</div></div>
+      <div><div class="stat-n">~$0.10</div><div class="stat-k">Estimated cost per statement</div></div>
+    </div>
+
+    <div class="col" style="margin-top:2rem">
+      <div class="callout">
+        <span class="eyebrow">The one-line version</span>
+        <p>The demo proved the workflow can be automated end-to-end and that a reviewer screen can make it checkable — and then, when it was pointed at a real property-management export, it revealed that the whole data model was built on the wrong assumption about how money is presented. That finding is worth more than the demo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 02 ============================ -->
+  <section id="context">
+    <div class="opener"><span class="secnum">02</span><h2>Why build a demo at all</h2></div>
+
+    <div class="col">
+      <p>The production system already has the hard parts: a status engine, a unit-transfer service, a notification service. Nothing about this project needed new business logic. What it needed was an answer to a sequencing problem — you cannot get approval to put a model in front of resident money by describing it, and you cannot learn what the reviewer screen must contain by imagining a reviewer.</p>
+      <p>So the demo was built to be <em>faithful but inert</em>. Every status code, sub-status and precedence rule is mirrored from the real workflow. Every account is seeded locally. The approve button applies a simulated outcome and names, on screen, the exact production path it would call instead.</p>
+    </div>
+
+    <div class="full tw">
+      <table>
+        <thead><tr><th style="width:32%">Demo piece</th><th style="width:34%">Production equivalent</th><th>What that buys</th></tr></thead>
+        <tbody>
+          <tr><td><span class="t">Seeded mock accounts</span></td><td>Account and move-out records fetched from the platform API</td><td>The match stage can be exercised, including against decoys, with no integration work.</td></tr>
+          <tr><td><span class="t">Ported status engine</span></td><td>The existing status service in the monolith</td><td>The proposed outcome is the outcome — reviewers are judging the real decision, not an approximation.</td></tr>
+          <tr><td><span class="t">Synchronous pipeline in the controller</span></td><td>A background worker on its own queue</td><td>The reviewer lands straight on the result, which is what makes the demo demonstrable in a meeting.</td></tr>
+          <tr><td><span class="t">&ldquo;Processed (simulated)&rdquo;</span></td><td>A POST to the existing move-out process path</td><td>The money step is visibly absent, so the demo can be run in front of anyone.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col" style="margin-top:2rem">
+      <div class="callout deep">
+        <span class="eyebrow">The rollout ladder this is step one of</span>
+        <p><strong>Shadow</strong> — the pipeline runs alongside humans and nobody sees it. <strong>Assisted</strong> — a human reviews every draft, which is what this demo shows. <strong>Confidence-gated</strong> — high-confidence, no-flag cases go straight through and the rest queue for review. <strong>Straight-through</strong> — the long-term goal, still human-gated on money for the first release. Naming the ladder up front is what makes &ldquo;a human approves everything&rdquo; a stage rather than a permanent limitation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ 03 ============================ -->
+  <section id="pipeline">
+    <div class="opener"><span class="secnum">03</span><h2>Four stages, two model tiers, one gate</h2></div>
+
+    <div class="col">
+      <p>The pipeline splits the work by what kind of mistake each step can make. Where an error would be silent and expensive, it gets the expensive model. Where the answer is a bounded choice with clear rules, it gets the cheap one — or no model at all.</p>
+    </div>
+
+    <div class="full ladder">
+      <div>
+        <span class="n">Stage 1</span><span class="t">Extract</span>
+        <span class="s">Reads the PDF and returns structured fields. Told explicitly never to infer or calculate a value that is not on the page.</span>
+        <span class="m">opus &middot; correctness</span>
+      </div>
+      <div>
+        <span class="n">Stage 2</span><span class="t">Match</span>
+        <span class="s">Resolves to an account by external ID, then unit, then name. The model is used only when several candidates genuinely remain.</span>
+        <span class="m">deterministic first &middot; haiku fallback</span>
+      </div>
+      <div>
+        <span class="n">Stage 3</span><span class="t">Classify</span>
+        <span class="s">Standard, cancelled applicant, or unit transfer, under a fixed precedence rule.</span>
+        <span class="m">haiku &middot; bounded choice</span>
+      </div>
+      <div>
+        <span class="n">Stage 4</span><span class="t">Reconcile</span>
+        <span class="s">Cross-checks the extracted figures against the account and raises flags. Confidence is scored down by what it finds.</span>
+        <span class="m">rules &middot; opus writes the summary</span>
+      </div>
+      <div class="gate">
+        <span class="n">Then</span><span class="t">The gate</span>
+        <span class="s">A person reads the draft beside the document and decides. Nothing downstream fires until they do.</span>
+        <span class="m">human &middot; always</span>
+      </div>
+    </div>
+
+    <div class="col" style="margin-top:1.6rem">
+      <h3>Deterministic first, model second</h3>
+      <p>Two of the four stages lead with plain Ruby. Matching tries an exact external-ID hit, then a unique unit, then a unique name, assigning a confidence to each route, and only calls a model when more than one candidate survives — which on a well-formed statement is never. The status engine that turns a classification into a status, sub-status, account status and notification has no model in it at all; it is a port, and being a port is the point.</p>
+      <p>That leaves the models doing what they are uniquely good at: reading an unstructured document, and writing a summary a human can skim.</p>
+    </div>
+
+    <div class="full tw" style="margin-top:2rem">
+      <table>
+        <thead><tr><th style="width:26%">Move-out type</th><th style="width:24%">Proposed outcome</th><th>What follows for the account</th></tr></thead>
+        <tbody>
+          <tr><td><span class="t">Unit transfer</span></td><td>Transfer complete</td><td>A new account opens in enrolment-pending, and the resident gets an enrolment notice rather than a refund one.</td></tr>
+          <tr><td><span class="t">Cancelled applicant</span></td><td>Cancelled, refund pending</td><td>The refund routes back to the original payment method rather than through self-service, because the applicant never became a resident.</td></tr>
+          <tr><td><span class="t">Standard, balance due to community</span></td><td>Move-out completed</td><td>The account closes owing a balance. No refund notice is sent.</td></tr>
+          <tr><td><span class="t">Standard, refund due to resident</span></td><td>Move-out processed, refund pending</td><td>The resident is notified of a pending refund and its amount.</td></tr>
+        </tbody>
+      </table>
+      <p class="note" style="margin-top:.9rem"><strong>Precedence across all three workflows:</strong> a unit transfer beats everything; a balance owed to the community beats a refund owed to the resident. The order matters more than the labels — it is the rule a reviewer is really checking.</p>
+    </div>
+
+    <div class="fig-pair">
+      <figure>
+        <img src="/case-studies/img/move-out-copilot/review-cancelled.webp" alt="Review screen for a cancelled applicant statement, showing the cancelled-applicant outcome and a note that the refund returns to the original payment method.">
+        <figcaption><span class="fignum">Fig. 2</span>The cancelled-applicant branch. The notification text spells out the operational consequence — the refund goes back to the original payment method — rather than just naming a code.</figcaption>
+      </figure>
+      <figure>
+        <img src="/case-studies/img/move-out-copilot/review-approved.webp" alt="Review screen after approval, showing a Processed (simulated) panel with account status, status, sub-status and notification, and a note naming the production path this would call.">
+        <figcaption><span class="fignum">Fig. 3</span>After approval. The panel names the exact production service that would run instead — the demo is explicit about where the pretending stops.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ============================ 04 ============================ -->
+  <section id="review">
+    <div class="opener"><span class="secnum">04</span><h2>Designing the screen a reviewer would trust</h2></div>
+
+    <div class="col">
+      <p>Most of the product thinking went into one page. A reviewer approving a move-out is being asked to take responsibility for a figure a model produced, so the screen has to make checking cheaper than re-doing the work by hand — otherwise they will re-do the work by hand, and the automation has cost time rather than saved it.</p>
+      <p>Four decisions follow from that:</p>
+    </div>
+
+    <div class="full tw">
+      <table>
+        <thead><tr><th style="width:26%">Decision</th><th style="width:36%">Reasoning</th><th>Consequence</th></tr></thead>
+        <tbody>
+          <tr><td><span class="t">Source document always on screen</span></td><td>Verification means comparing a claim to its source. If the reviewer has to open the PDF separately, they won't.</td><td>Half the width is spent on an embedded viewer — expensive layout, and the right call.</td></tr>
+          <tr><td><span class="t">Stages reported separately</span></td><td>&ldquo;The AI says refund due to resident&rdquo; is unauditable. Extract, match, classify and reconcile each fail differently and each need their own panel.</td><td>A reviewer who distrusts the outcome can see which stage to distrust.</td></tr>
+          <tr><td><span class="t">Reasoning shown, not just results</span></td><td>Each stage carries its own sentence: why this account, why this type, what the precedence rule was.</td><td>The classification panel prints the precedence rule in full, every time — repetitive on screen, and it is the thing reviewers most need reminding of.</td></tr>
+          <tr><td><span class="t">Flags before the outcome</span></td><td>The proposed status is the most persuasive thing on the page, so anything that should undermine it has to be read first.</td><td>Reconciliation sits directly above the approve button, and confidence is scored down by each flag rather than reported separately.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/move-out-copilot/index-empty.webp" alt="Upload screen showing a file picker, an Upload and run automation button, and a stub-mode notice explaining that the API key is not set.">
+      <figcaption><span class="fignum">Fig. 4</span>The entry point, and a design decision worth defending: the app tells you, on screen, that it is running without an API key and what that changes. A demo that hides which mode it is in is a demo that will eventually mislead the person watching it. Section 06 is about how far that honesty goes.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============================ 05 ============================ -->
+  <section id="real-docs">
+    <div class="opener"><span class="secnum">05</span><h2>The finding: we re-net what the ledger already netted</h2></div>
+
+    <div class="col">
+      <p>The demo was built against purpose-made statements that carry exactly the fields the schema wants: a deposit, a total of charges, two booleans. Real property-management exports do not look like that, and pointing the live pipeline at a genuine one produced the most valuable result of the project.</p>
+      <p>Extraction held up well. Names, lease identifiers and totals came out correctly, and the model even captured a statutory notice buried in the footer. The failure was not reading — it was that <strong>the data model did not match how the document presents money.</strong></p>
+    </div>
+
+    <div class="full tw">
+      <table>
+        <thead><tr><th style="width:30%">What the engine assumes</th><th>What a real ledger actually provides</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="t">Gross inputs</span><span class="s">A full deposit and a full charge total, which it then nets itself</span></td>
+            <td>An <strong>already-reconciled ledger</strong>: every deposit posting and its application, then a stated net; charges shown as the residual still unpaid; and the bottom line printed outright as an outstanding balance.</td>
+          </tr>
+          <tr>
+            <td><span class="t">One number per side</span><span class="s">deposit_value, total_move_out_charges</span></td>
+            <td>Line items, a deposit ledger, unapplied credits, and four separately stated totals — each authoritative, none of them the two scalars the schema asks for.</td>
+          </tr>
+          <tr>
+            <td><span class="t">Workflow booleans on the page</span><span class="s">is_unit_transfer, is_cancelled_applicant</span></td>
+            <td>Neither concept exists on the statement. They are platform workflow states, derivable only from the matched account — so asking the extractor for them invites invention.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col" style="margin-top:2rem">
+      <div class="callout crit">
+        <span class="eyebrow">Right for the wrong reason</span>
+        <p>On the real statement the pipeline produced the correct outcome — balance due to the community — but only because the extractor happened to read the <em>net</em> deposits held, which was zero. Had it read the gross deposits that the same document also lists, the engine would have proposed a four-figure refund to a resident who in fact owed money — the right sign reversed, on a real document, at full confidence. A demo that gives the right answer by luck is more dangerous than one that fails, because it passes review.</p>
+      </div>
+    </div>
+
+    <div class="col" style="margin-top:1.6rem">
+      <p>The remedy is a change of posture rather than a bug fix: <strong>stop re-deriving the outcome and start trusting the figures the ledger states</strong>, keeping the old computation as a cross-check that raises a flag when the two disagree. That, plus matching on the real lease identifier, normalising unit strings, deriving workflow type from account state instead of the page, and adding arithmetic cross-checks over the line items, is the work laid out on an unmerged branch — where it is prototyped and validated against three real statements from two different property-management systems.</p>
+      <p>Two corrections made during that validation are worth naming, because they are the kind that only surface on real documents. A forty-row ledger overran the extraction token budget and truncated the JSON mid-object. And a live extraction failure was <em>silently falling back to demo data</em> — producing a confident draft for an entirely different resident. Both are fixed on the branch. Neither is fixed on <code>main</code>.</p>
+    </div>
+  </section>
+
+  <!-- ============================ 06 ============================ -->
+  <section id="operating">
+    <div class="opener"><span class="secnum">06</span><h2>What running it actually shows</h2></div>
+
+    <div class="col">
+      <p>The seven sample statements in the repository are a proper test matrix. They were built to exercise every branch of the reconciliation logic: an account that does not exist, a deposit that disagrees with the account, charges that exceed the deposit with no forwarding address, a clean cancellation, a cancellation that contradicts itself with a non-zero balance, a transfer to a unit that already has an account, and a transfer to one that does not.</p>
+      <p>I uploaded all seven to a running instance in its default mode. Every one produced a draft. <strong>Not one produced a flag.</strong></p>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/move-out-copilot/index-full.webp" alt="Statement list showing seven uploaded sample files resolving to only three types, each with a Pending review badge and 100% confidence.">
+      <figcaption><span class="fignum">Fig. 5</span>Seven scenario statements, three outcomes, every one at 100% confidence — including <code>01_no_match.pdf</code>, which was built to have no matching account and was matched to one anyway. Without an API key the extractor picks its output from the <em>filename</em>, so the documents' contents never enter the system.</figcaption>
+    </figure>
+
+    <div class="col" style="margin-top:2rem">
+      <p>This is stub mode working exactly as designed and documented. The problem is what the design implies. All five reconciliation checks compare extracted figures against the seeded account — and the three stub payloads were written to agree with those accounts perfectly. So in the mode the app runs in by default, <strong>the safety net cannot fire at all</strong>, and the demo's central claim — that a reviewer will be warned when something is wrong — is the one thing the demo cannot show.</p>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/move-out-copilot/review-standard.webp" alt="Review screen where the statement PDF on the left states a deposit of $650.00, charges of $200.00 and a refund of $450.00, while the extracted fields on the right show $500.00, $350.00 and a proposed refund of $150.00, with reconciliation reporting all checks passed at 100% confidence.">
+      <figcaption><span class="fignum">Fig. 6</span>The same page, read carefully. The document on the left states a deposit of $650.00, charges of $200.00 and a refund of $450.00. The panel on the right reports $500.00, $350.00 and proposes a refund of $150.00 — and reconciliation says all checks passed, at 100% confidence. The layout that was designed to make discrepancies visible is displaying one, and nothing in the interface notices.</figcaption>
+    </figure>
+
+    <div class="col" style="margin-top:2.5rem">
+      <h3>And a document that does not exist at all</h3>
+      <p>Because nothing validates the upload beyond checking that a file was chosen, a zero-byte file named to hit the transfer branch produces a complete, approvable unit-transfer draft. The PDF viewer reports that it cannot load the document; the pipeline reports 100% confidence in what it says.</p>
+    </div>
+
+    <figure>
+      <img src="/case-studies/img/move-out-copilot/empty-upload.webp" alt="Review screen for a zero-byte upload: the PDF viewer shows 'Failed to load PDF document' while the right-hand panels show a complete unit-transfer proposal at 100% confidence with all checks passed.">
+      <figcaption><span class="fignum">Fig. 7</span>A zero-byte file, and a confident proposal about a resident. The upload guard checks only that a file was selected. This is fixed on the same unmerged branch as the extraction issues in section 05.</figcaption>
+    </figure>
+
+    <div class="full tw" style="margin-top:2.5rem">
+      <table>
+        <thead><tr><th style="width:14%"></th><th style="width:34%">Finding</th><th>Why it matters</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="chip crit">Live path</span></td>
+            <td>When a real extraction returns anything unparseable, the extractor falls back to stub data instead of failing.</td>
+            <td>The pipeline continues with a fabricated resident, a fabricated deposit and a fabricated balance, and presents the result at full confidence. This is the single most dangerous line in the codebase, and it is on <code>main</code>.</td>
+          </tr>
+          <tr>
+            <td><span class="chip crit">Demo</span></td>
+            <td>No reconciliation flag can fire in stub mode; every run scores 100%.</td>
+            <td>The safety net is the thing the demo exists to demonstrate, and it is the one thing a viewer without an API key never sees working.</td>
+          </tr>
+          <tr>
+            <td><span class="chip warn">Authority</span></td>
+            <td>Matching lets deterministic rules win and uses the model only to break ties. Classification does the opposite — with a key set, the model's answer <em>supersedes</em> the deterministic precedence rules.</td>
+            <td>Two adjacent stages hold opposite policies on who decides, and nothing in the interface or the documentation says so. The precedence rule the screen prints is not necessarily the rule that was applied.</td>
+          </tr>
+          <tr>
+            <td><span class="chip warn">Boundary</span></td>
+            <td>When charges exactly equal the deposit, the engine proposes refund due to resident, alongside an account state and notification that both say completed with no refund.</td>
+            <td>A perfectly settled account gets the refund status code. Every other case is internally consistent; this one boundary is not.</td>
+          </tr>
+          <tr>
+            <td><span class="chip warn">Access</span></td>
+            <td>There is no authentication, so nothing records which person approved a draft.</td>
+            <td>Acceptable in a local sandbox, and the first thing that has to change, because the entire safety argument rests on <em>who</em> approved.</td>
+          </tr>
+          <tr>
+            <td><span class="chip">Coverage</span></td>
+            <td>There is no test directory.</td>
+            <td>The status engine is a port of rules that already exist elsewhere — the easiest thing in the world to test with a table, and the thing most worth testing, since a mistake in it mislabels money.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================ 07 ============================ -->
+  <section id="decisions">
+    <div class="opener"><span class="secnum">07</span><h2>Decisions and trade-offs</h2></div>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:20%">Decision</th><th style="width:25%">Why</th><th style="width:25%">What it cost</th><th>Verdict</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="t">Human gate on the money step</span></td>
+            <td>The failure mode is someone's deposit being wrong, and there is no undo that a resident experiences as an undo.</td>
+            <td>No throughput gain in the first release; the automation saves reading time, not headcount.</td>
+            <td><span class="chip ok">Right call</span><span class="s">And named as a rung on a ladder, not a permanent state.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Port the status engine rather than re-derive it</span></td>
+            <td>The proposed outcome has to be the outcome, or reviewers are approving an approximation.</td>
+            <td>The port has to be kept in step with the original by hand.</td>
+            <td><span class="chip ok">Right call</span><span class="s">It is what makes the demo evidence rather than a mock-up.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Two model tiers by cost of error</span></td>
+            <td>Reading financial figures off a PDF is where a silent mistake is expensive; picking one of three labels is not.</td>
+            <td>Two prompts and two behaviours to keep in mind rather than one.</td>
+            <td><span class="chip ok">Right call</span><span class="s">Though stage 4 spends the expensive model on prose while rules do the checking — see below.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Deterministic matching, model as tie-breaker</span></td>
+            <td>Most matches are an exact identifier hit. Asking a model to do them is slower, costlier and less predictable.</td>
+            <td>Genuinely messy identifiers fall through to a low-confidence best guess.</td>
+            <td><span class="chip ok">Right call</span><span class="s">The confidence ladder per route is the good detail here.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Stub mode keyed on the filename</span></td>
+            <td>A demo that needs an API key is a demo that does not get run.</td>
+            <td>The sample statements' contents are ignored, so four of the seven scenarios and all five flag branches are unreachable by default.</td>
+            <td><span class="chip crit">Undermines the point</span><span class="s">Stubs should be selected by scenario, not by filename.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Fall back to stub data on extraction failure</span></td>
+            <td>Presumably to keep the demo running when the API misbehaves.</td>
+            <td>In live mode it converts a loud failure into a confident answer about the wrong person.</td>
+            <td><span class="chip crit">Wrong call</span><span class="s">Fixed on the branch; still on <code>main</code>.</span></td>
+          </tr>
+          <tr>
+            <td><span class="t">Synchronous pipeline in the request</span></td>
+            <td>The reviewer lands straight on the result, which is what makes it demoable live.</td>
+            <td>A request held open for the length of several model calls; no retry, no visible progress.</td>
+            <td><span class="chip ok">Right for a demo</span><span class="s">And the manual already says what replaces it.</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col" style="margin-top:2rem">
+      <h3>The one I would argue with</h3>
+      <p>Stage 4 is described as the safety net and is given the expensive model on the grounds that it catches transcription errors. In fact every check it performs is deterministic Ruby — a missing account, a deposit that disagrees, a cancellation with a balance, a transfer to an unknown unit — and the model's only job is to narrate them. That is a defensible use of a model, but it is not a safety net, and the cost table implies otherwise. Either the expensive model should be doing an independent check the rules cannot do, or the stage should be honest that it is a summariser.</p>
+    </div>
+  </section>
+
+  <!-- ============================ 08 ============================ -->
+  <section id="next">
+    <div class="opener"><span class="secnum">08</span><h2>What I would do next</h2></div>
+
+    <div class="col">
+      <p>Ranked by risk removed per unit of effort. The first two are hours, not days, and the first one should happen before the demo is shown again.</p>
+    </div>
+
+    <div class="full tw">
+      <table>
+        <thead><tr><th style="width:5%">#</th><th style="width:28%">Action</th><th style="width:45%">Why it matters</th><th>Type</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="rank">1</td>
+            <td><span class="t">Make extraction fail loudly</span></td>
+            <td>Remove the fallback from live extraction so an API failure or an unparseable response marks the statement failed instead of silently substituting demo data for a different resident. The fix exists on the branch; it belongs on <code>main</code> today.</td>
+            <td><span class="chip crit">Critical</span></td>
+          </tr>
+          <tr>
+            <td class="rank">2</td>
+            <td><span class="t">Select stubs by scenario, not filename</span></td>
+            <td>Give each sample statement a stub payload that matches what the document actually says, so the four unreachable scenarios and all five flag branches can be demonstrated without a key. This is what makes the safety story visible to the people who need convincing.</td>
+            <td><span class="chip crit">Demo</span></td>
+          </tr>
+          <tr>
+            <td class="rank">3</td>
+            <td><span class="t">Land the ledger-aware model</span></td>
+            <td>Trust the stated net figures and keep the gross computation as a cross-check; match on lease identifier; derive workflow type from account state. Without this the pipeline is only correct on statements shaped like the samples.</td>
+            <td><span class="chip warn">Correctness</span></td>
+          </tr>
+          <tr>
+            <td class="rank">4</td>
+            <td><span class="t">Table-test the status engine</span></td>
+            <td>It is a pure function from three inputs to four outputs, ported from rules that already exist. Twenty rows of expected values would pin it, and would already have caught the equal-charges-and-deposit boundary.</td>
+            <td><span class="chip warn">Quality</span></td>
+          </tr>
+          <tr>
+            <td class="rank">5</td>
+            <td><span class="t">Decide who decides, and say so</span></td>
+            <td>Make classification deterministic-first like matching, or document that the model overrides the precedence rules when a key is present. The current split is invisible and the screen implies the opposite of what happens.</td>
+            <td><span class="chip warn">Clarity</span></td>
+          </tr>
+          <tr>
+            <td class="rank">6</td>
+            <td><span class="t">Add authentication and an approver record</span></td>
+            <td>The safety argument is that a person approved. Right now no person is identified, any visitor can approve, and stored statements are readable by anyone who guesses an ID.</td>
+            <td><span class="chip warn">Access</span></td>
+          </tr>
+          <tr>
+            <td class="rank">7</td>
+            <td><span class="t">Build the golden-file corpus</span></td>
+            <td>Extraction is the fragile layer and every property-management system formats differently. A small set of real, redacted statements per system, with expected extractions asserted, is the only way to know whether a prompt change helped or hurt.</td>
+            <td><span class="chip deep">Foundation</span></td>
+          </tr>
+          <tr>
+            <td class="rank">8</td>
+            <td><span class="t">Instrument the confidence gate before relying on it</span></td>
+            <td>The rollout ladder's third rung sends high-confidence cases straight through. Today confidence is one minus a hand-tuned penalty, and it has never been compared against whether reviewers actually agreed. Log every decision against its score first; choose the threshold from that.</td>
+            <td><span class="chip deep">Foundation</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col" style="margin-top:2.5rem">
+      <div class="callout deep">
+        <span class="eyebrow">A note on outcome metrics</span>
+        <p>There are no accuracy figures here — no extraction error rate, no proportion of drafts a reviewer accepted unchanged, no time saved per statement. The prototype has processed a handful of statements, three of them real, and nothing has been measured against a human baseline. The honest next artefact is not a better demo but a scored one: a corpus of real statements with known correct outcomes, replayed through the pipeline, reporting what it got right, what it got wrong, and — the number that actually decides whether the confidence gate can ever open — how often it was wrong <em>and</em> confident.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ APPENDIX ============================ -->
+  <section class="appendix" id="appendix">
+    <div class="opener"><span class="secnum">A</span><h2>Appendix</h2></div>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th style="width:24%">Layer</th><th>Choice</th></tr></thead>
+        <tbody>
+          <tr><td><span class="t">Application</span></td><td>Rails 7.1 on Ruby 3.2, Puma, SQLite. No asset pipeline, no Redis, no external service beyond the Anthropic API.</td></tr>
+          <tr><td><span class="t">Models</span></td><td>Opus for extraction and the reconciliation summary; Haiku for match disambiguation and classification. Prompt-caching the extraction schema is noted as a production step.</td></tr>
+          <tr><td><span class="t">Storage</span></td><td>Uploaded statements written to disk and served back to the review screen; drafts keep the extracted JSON and flags as text columns.</td></tr>
+          <tr><td><span class="t">Processing</span></td><td>Synchronous in the request for the demo; documented as a one-to-one mapping onto a background worker in production.</td></tr>
+          <tr><td><span class="t">Fixtures</span></td><td>Seven mock accounts including deliberate decoys, and seven sample statements covering every branch of the reconciliation logic.</td></tr>
+          <tr><td><span class="t">Quality</span></td><td>None automated. No test directory, no CI.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tw" style="margin-top:2rem">
+      <table>
+        <thead><tr><th style="width:45%">Screen</th><th>Shown in</th></tr></thead>
+        <tbody>
+          <tr><td>Review draft &middot; unit transfer</td><td class="num">Cover</td></tr>
+          <tr><td>Review draft &middot; cancelled applicant &middot; Processed (simulated)</td><td class="num">Section 03</td></tr>
+          <tr><td>Upload and stub-mode notice</td><td class="num">Section 04</td></tr>
+          <tr><td>Statement list &middot; standard review &middot; zero-byte upload</td><td class="num">Section 06</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col" style="margin-top:2.5rem">
+      <p class="note">Screenshots were captured from a locally running instance on <code>main</code> at commit <code>8420ea1</code>, seeded from the repository's own seed file and driven with the repository's own sample statements, in the default stub mode. No API key was configured and no model call was made, which is itself the subject of section 06. The figures in section 05 concerning real property-management statements are drawn from the design note and validation table on the unmerged <code>feature/entrata-statements</code> branch, not reproduced here. Technical claims throughout are drawn from the application source and its documentation; every defect described in section 06 was reproduced in the running application, and the status-engine boundary was confirmed by invoking the engine directly.</p>
+    </div>
+  </section>
+
+</div>

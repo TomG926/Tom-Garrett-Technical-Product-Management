@@ -1,0 +1,35 @@
+<footer class="mt-24 border-t border-ink-100 bg-panel">
+  <div class="mx-auto max-w-6xl px-6 py-14 sm:px-8">
+    <div class="grid gap-10 sm:grid-cols-[1.4fr_1fr_1fr]">
+      <div>
+        <p class="font-display text-xl font-semibold tracking-tight text-ink-950">Tom Garrett</p>
+        <p class="mt-2 max-w-sm text-[0.92rem] leading-relaxed text-ink-500">
+          Product-led engineering leader across design, code and product.
+          Currently Director of Product Engineering at DepositCloud.
+        </p>
+      </div>
+
+      <div>
+        <p class="eyebrow">Elsewhere</p>
+        <ul class="mt-3 space-y-1.5 text-[0.9rem]">
+          <li><a class="link-underline text-ink-700 hover:text-ink-950" href="mailto:<%= contact[:email] %>"><%= contact[:email] %></a></li>
+          <li><a class="link-underline text-ink-700 hover:text-ink-950" href="<%= contact[:linkedin] %>" rel="noopener">LinkedIn</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <p class="eyebrow">This site</p>
+        <ul class="mt-3 space-y-1.5 text-[0.9rem]">
+          <li><%= link_to "Work", work_index_path, class: "link-underline text-ink-700 hover:text-ink-950" %></li>
+          <li><%= link_to "About", about_path, class: "link-underline text-ink-700 hover:text-ink-950" %></li>
+          <li><a class="link-underline text-ink-700 hover:text-ink-950" href="<%= contact[:cv] %>" download>Download CV (PDF)</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-ink-100 pt-6">
+      <p class="text-[0.78rem] text-ink-400"><%= contact[:location] %></p>
+      <p class="font-mono text-[0.7rem] text-ink-300">Built with Rails &amp; Tailwind</p>
+    </div>
+  </div>
+</footer>
