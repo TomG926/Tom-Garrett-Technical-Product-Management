@@ -62,6 +62,12 @@ rewrites the rendered HTML rather than relying on `relative_url_root` alone.
 The route, the work card, the index and the static export all pick it up from the
 catalogue entry.
 
+## The CV
+
+`/tom-garrett-cv.pdf` is generated from `cv/tom-garrett-cv.html`, a standalone
+print document that borrows the site's typography so the download matches the
+pages linking to it. `cv/README.md` covers regenerating it and what to check.
+
 ## Not in this repository
 
 `/private` holds superseded PDF exports of the case studies. They predate an

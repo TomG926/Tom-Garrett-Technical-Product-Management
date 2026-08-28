@@ -2,7 +2,8 @@
   <nav class="mx-auto flex max-w-6xl items-center gap-6 px-6 py-4 sm:px-8" aria-label="Primary">
     <%= link_to root_path, class: "group flex items-baseline gap-2.5" do %>
       <span class="font-display text-[0.95rem] font-700 tracking-tight text-ink-950 font-semibold">Tom&nbsp;Garrett</span>
-      <span class="hidden text-[0.72rem] text-ink-400 sm:inline">Technical Product Management</span>
+      <span class="hidden text-[0.72rem] text-ink-400 sm:inline"><%= contact[:role] %></span>
+      <span class="hidden text-[0.72rem] text-ink-300 lg:inline">· <%= contact[:strapline] %></span>
     <% end %>
 
     <div class="ml-auto flex items-center gap-5 text-[0.85rem] font-medium sm:gap-7">

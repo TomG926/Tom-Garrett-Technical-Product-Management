@@ -3,9 +3,12 @@ module ApplicationHelper
   CONTACT = {
     name: "Tom Garrett",
     role: "Technical Product Management",
+    strapline: "Platform ecosystems & architecture",
     email: "tgarrett.92@icloud.com",
     linkedin: "https://linkedin.com/in/thomasgarrett-digital",
     linkedin_label: "linkedin.com/in/thomasgarrett-digital",
+    site: "https://productdevelopment.ie",
+    site_label: "productdevelopment.ie",
     location: "Dublin, Ireland",
     cv: "/tom-garrett-cv.pdf"
   }.freeze

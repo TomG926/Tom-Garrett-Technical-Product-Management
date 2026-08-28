@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tom Garrett — Technical Product Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Libre+Franklin:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Print CV. Typography and palette follow the portfolio site: Archivo for
+     display, Libre Franklin for body, IBM Plex Mono for dates and figures.
+     Every font has a system fallback so the PDF still sets correctly if the
+     renderer has no network. */
+
+  @page { size: A4; margin: 11mm 13mm 10mm; }
+
+  :root {
+    --ink-950: #0B0D10;
+    --ink-700: #3A4048;
+    --ink-500: #565E68;
+    --ink-400: #79818B;
+    --rule:    #DCE0E5;
+    --accent:  #0F5C4A;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  body {
+    margin: 0;
+    font-family: "Libre Franklin", "Segoe UI", system-ui, -apple-system, sans-serif;
+    font-size: 8.85pt;
+    line-height: 1.35;
+    color: var(--ink-500);
+    background: #fff;
+  }
+
+  strong { color: var(--ink-950); font-weight: 600; }
+  a { color: inherit; text-decoration: none; }
+
+  /* ── Header ─────────────────────────────────────────────────────────── */
+  header { margin-bottom: 11pt; }
+
+  h1 {
+    margin: 0;
+    font-family: Archivo, "Segoe UI", system-ui, sans-serif;
+    font-size: 25pt;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    color: var(--ink-950);
+  }
+
+  .strapline {
+    margin: 5pt 0 0;
+    font-family: Archivo, "Segoe UI", system-ui, sans-serif;
+    font-size: 7.6pt;
+    font-weight: 600;
+    letter-spacing: 0.155em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .contacts {
+    margin: 5pt 0 0;
+    font-size: 8.2pt;
+    color: var(--ink-400);
+  }
+  .contacts span { white-space: nowrap; }
+  .sep { padding: 0 4pt; color: #C3C9D0; }
+
+  .summary { margin: 7pt 0 0; font-size: 8.85pt; }
+
+  /* ── Section headings ───────────────────────────────────────────────── */
+  h2 {
+    margin: 11pt 0 0;
+    padding-bottom: 3pt;
+    border-bottom: 0.75pt solid var(--rule);
+    font-family: Archivo, "Segoe UI", system-ui, sans-serif;
+    font-size: 7.6pt;
+    font-weight: 600;
+    letter-spacing: 0.145em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  /* ── Lists ──────────────────────────────────────────────────────────── */
+  ul { margin: 5pt 0 0; padding: 0; list-style: none; }
+  li { position: relative; padding-left: 9pt; margin-top: 3pt; }
+  li::before {
+    content: "–";
+    position: absolute;
+    left: 0;
+    color: var(--ink-400);
+  }
+  li:first-child { margin-top: 0; }
+
+  /* ── Experience ─────────────────────────────────────────────────────── */
+  .role { margin-top: 7pt; break-inside: avoid; }
+  .role:first-of-type { margin-top: 6pt; }
+
+  .org-line, .title-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10pt;
+  }
+
+  .org {
+    font-family: Archivo, "Segoe UI", system-ui, sans-serif;
+    font-size: 11.5pt;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink-950);
+  }
+
+  .meta {
+    font-family: "IBM Plex Mono", Consolas, monospace;
+    font-size: 7.4pt;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-400);
+    white-space: nowrap;
+  }
+
+  .note { margin: 2pt 0 0; font-size: 8.4pt; font-style: italic; color: var(--ink-400); }
+
+  .title-line { margin-top: 5pt; }
+  .title { font-size: 9.4pt; font-weight: 600; color: var(--ink-950); }
+  .dates {
+    font-family: "IBM Plex Mono", Consolas, monospace;
+    font-size: 7.8pt;
+    color: var(--ink-400);
+    white-space: nowrap;
+  }
+  .title-line + .title-line { margin-top: 2pt; }
+  .title-line + ul { margin-top: 4pt; }
+
+  /* ── Case studies ───────────────────────────────────────────────────── */
+  .study { margin-top: 5.5pt; break-inside: avoid; }
+  .study:first-of-type { margin-top: 6pt; }
+  .study-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10pt; }
+  .study-name { font-size: 9.6pt; font-weight: 600; color: var(--ink-950); }
+  .study-body { margin: 1.5pt 0 0; }
+  .figures {
+    margin: 2pt 0 0;
+    font-family: "IBM Plex Mono", Consolas, monospace;
+    font-size: 7.6pt;
+    color: var(--ink-400);
+  }
+  .figures b { color: var(--ink-700); font-weight: 500; }
+
+  /* ── Two-column tail ────────────────────────────────────────────────── */
+  .tail { display: flex; gap: 16pt; }
+  .tail > div { flex: 1; }
+
+  .refs {
+    margin-top: 7pt;
+    padding-top: 5pt;
+    border-top: 0.75pt solid var(--rule);
+    font-family: "IBM Plex Mono", Consolas, monospace;
+    font-size: 7.4pt;
+    letter-spacing: 0.06em;
+    color: var(--ink-400);
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Tom Garrett</h1>
+  <p class="strapline">Technical Product Management · Platform Ecosystems &amp; Architecture</p>
+  <p class="contacts">
+    <span>tgarrett.92@icloud.com</span><span class="sep">·</span><span>linkedin.com/in/thomasgarrett-digital</span><span class="sep">·</span><span>productdevelopment.ie</span><span class="sep">·</span><span>Dublin, Ireland</span>
+  </p>
+</header>
+
+<p class="summary">
+  Technical product leader with ten years at the intersection of <strong>scalable software architecture, UX design
+  and platform ownership</strong>. I own the roadmap for a regulated US rental-payments platform serving
+  <strong>250,000+ customers</strong> across three applications, designed the <strong>enterprise API ecosystem</strong>
+  that unlocks its largest accounts, and run data-led discovery to decide what ships. I founded DocuDynamics and took
+  it from <strong>idea to funded MVP in five months</strong>, and I advise early-stage Irish companies on product.
+  I write the code alongside the roadmap, so system constraints become a plan rather than a surprise.
+</p>
+
+<h2>Product &amp; Technical Skillset</h2>
+<ul>
+  <li><strong>Product strategy &amp; delivery</strong> — Agile planning, multi-phase initiative scoping, cross-timezone execution, stakeholder management</li>
+  <li><strong>Discovery &amp; validation</strong> — user research, UX prototyping, Hotjar/session analysis, data-led feature kill/scale decisions</li>
+  <li><strong>Platform &amp; ecosystems</strong> — API contract design, developer experience (DX), feature flags (Flipper), analytics instrumentation</li>
+  <li><strong>Regulated domains</strong> — US FinTech/PropTech, SOC 2 Type I, security and performance as product constraints</li>
+  <li><strong>Core technical fluency</strong> — Ruby on Rails, React, Node, SQL/PostgreSQL, GCP/AWS infrastructure, CI/CD pipelines, system architecture</li>
+  <li><strong>API integrations</strong> — Yardi, Entrata, RealPage, Rent Manager, Twilio, Stripe, Salesforce</li>
+</ul>
+
+<h2>Experience</h2>
+
+<div class="role">
+  <div class="org-line">
+    <span class="org">DepositCloud</span>
+    <span class="meta">Ireland (US market)</span>
+  </div>
+  <p class="note">Multi-tenant Rails SaaS managing the full US rental security-deposit lifecycle for property management companies and multifamily operators.</p>
+  <div class="title-line">
+    <span class="title">Technical Product &amp; Engineering Director</span>
+    <span class="dates">Aug 2025 – Present</span>
+  </div>
+  <div class="title-line">
+    <span class="title">Lead Technical Product Engineer</span>
+    <span class="dates">Jun 2024 – Aug 2025</span>
+  </div>
+  <ul>
+    <li>Define and execute the product roadmap across <strong>three applications</strong> serving <strong>250k+ customers</strong> (85k+ active accounts, 160k+ enrollments onboarding), aligning a distributed team of <strong>8 engineers</strong> on daily priority frameworks and release cycles.</li>
+    <li>Partnered with company leadership to translate strategic business objectives into <strong>rapid-prototype product mockups</strong>, using production data to validate core user journeys before full rollout.</li>
+    <li>Transformed deployment strategy by introducing <strong>feature flags tied to analytics</strong> (Flipper), establishing measurable launch metrics that make every release a strategic product decision rather than a scheduling event.</li>
+    <li>Scoped, designed and launched a <strong>Twilio-based communication platform in under three months</strong>, reducing average operational handling time and eliminating <strong>100% of third-party vendor licensing costs</strong>.</li>
+    <li>Owned the product lifecycle for a greenfield <strong>PMS Sync &amp; Integration product</strong>, architecting bi-directional APIs with Yardi, Entrata, RealPage and Rent Manager — the integrations that unlock enterprise-tier accounts.</li>
+    <li>Sustained a delivery cadence of <strong>900+ merged PRs and 18–25 major multi-phase initiatives over 24 months</strong> through structured Agile planning, weekly one-to-ones and clear initiative scoping.</li>
+    <li>Accelerated product release velocity <strong>from two weeks to under four hours</strong> by re-engineering automated CI/CD infrastructure (Docker, GitHub Actions), removing deployment blockers for cross-functional teams.</li>
+    <li>Treated security as an essential product requirement, embedding <strong>SOC 2 Type I compliance</strong>, automated penetration testing and vulnerability mitigation directly into the development roadmap.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <div class="org-line">
+    <span class="org">Product Consultant &amp; Adviser</span>
+    <span class="meta">2024 – Present</span>
+  </div>
+  <p class="note">Advisory and hands-on product engineering for early-stage Irish companies.</p>
+  <ul>
+    <li><strong>Guest Nutrition</strong> (2024 – present) — product adviser to an Enterprise Ireland High Potential Start-Up (HPSU); guided product strategy from <strong>0 to 1</strong> and into active industry field trials.</li>
+    <li><strong>WealthGuard</strong> (2025 – present) — scoped the product specification and built a robust wealth-management application in Ruby on Rails, now in active production use by <strong>100+ high-net-worth clients</strong>.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <div class="org-line">
+    <span class="org">DocuDynamics — Founder</span>
+    <span class="meta">Nov 2022 – Jun 2024</span>
+  </div>
+  <p class="note">Compliance-automation startup. End-to-end product development, from customer discovery to production code.</p>
+  <ul>
+    <li>Designed and launched the entire <strong>v1 web application from concept to funded MVP in five months</strong> (React, Node, AWS), securing <strong>Microsoft for Startups</strong> and <strong>New Frontiers Phase 2</strong> backing.</li>
+    <li>Mapped the critical user workflows — <strong>document upload → AI pipeline → collaboration</strong> — and continuously optimised systemic friction points through direct user discovery sessions.</li>
+    <li>Cultivated a culture of disciplined experimentation, using real-time production analytics to <strong>kill low-engagement features</strong> and scale high-value workflows.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <div class="org-line">
+    <span class="org">Penco — Digital Operations Manager</span>
+    <span class="meta">Dec 2019 – Nov 2022</span>
+  </div>
+  <ul>
+    <li>Managed end-to-end delivery of web and mobile software features, aligning qualitative user research with sprint goals to ship production-ready work inside <strong>two-week iterations</strong>.</li>
+    <li>Designed a custom <strong>Salesforce CRM integration</strong> strategy that eliminated <strong>60% of manual data entry</strong> and increased operational capacity by <strong>40%</strong>.</li>
+    <li>Embedded rapid product validation frameworks by introducing <strong>Hotjar</strong> for user testing, cutting feature evaluation lifecycles by <strong>70%</strong>.</li>
+    <li>Featured in <strong>The Sunday Times</strong> (Business, Jul 2020) on leadership in helping Irish SMEs build data-driven operations.</li>
+  </ul>
+</div>
+
+<div class="role">
+  <div class="org-line">
+    <span class="org">Earlier roles</span>
+    <span class="meta">2016 – 2019</span>
+  </div>
+  <ul>
+    <li><strong>Full Stack Developer</strong>, Gambling.com Group, Dublin (Jan – Dec 2019).</li>
+    <li><strong>User Experience Designer</strong>, GRID Finance, Dublin (Jan 2018 – Jan 2019) — journey mapping and application interfaces for an SME lending engine.</li>
+    <li><strong>Multimedia Designer</strong>, Associated Newspapers (Jun 2017 – Jun 2018) · Cauldron Recording Studios (Jun – Sep 2016), Dublin.</li>
+  </ul>
+</div>
+
+<h2>Selected Case Studies — written up in full at productdevelopment.ie</h2>
+
+<div class="study">
+  <div class="study-head">
+    <span class="study-name">Resident Radius Contact Centre</span>
+    <span class="meta">Voice infrastructure · Dec 2024 – Jun 2026</span>
+  </div>
+  <p class="study-body">
+    Multilingual browser-based call centre on Twilio Programmable Voice; product and delivery lead across
+    7 contributors. Language-aware round-robin routing, row-locked so two callers can never be handed the same
+    agent; every call is a two-party conference, so warm transfer, hold and supervisor entry never drop the caller.
+  </p>
+  <p class="figures"><b>~5,000</b> calls a month &nbsp;·&nbsp; <b>9</b> languages in the IVR &nbsp;·&nbsp; <b>28</b> webhook and agent-action endpoints &nbsp;·&nbsp; <b>47</b> schema migrations against a live product</p>
+</div>
+
+<div class="study">
+  <div class="study-head">
+    <span class="study-name">WealthGuard Dashboards</span>
+    <span class="meta">Personal wealth platform · Oct 2025 – Aug 2026</span>
+  </div>
+  <p class="study-body">
+    Household balance sheet, retirement outlook and protection-gap analysis built for Irish rules — per-pension
+    projection, State Pension from 66, headroom against the Standard Fund Threshold. Goals share one cash pool and
+    resolve in priority order, so the same euro can never fund three goals at once.
+  </p>
+  <p class="figures"><b>22</b> domain tables &nbsp;·&nbsp; <b>24</b> screens, member and adviser &nbsp;·&nbsp; test-suite rebuild from <b>31.9%</b> to <b>91.6%</b> line coverage across <b>1,097</b> tests</p>
+</div>
+
+<div class="study">
+  <div class="study-head">
+    <span class="study-name">DepositLex</span>
+    <span class="meta">AI legal intelligence · Jun – Aug 2026</span>
+  </div>
+  <p class="study-body">
+    A knowledge base of US deposit law that keeps itself current and never writes to itself. Three Claude agents
+    research the live web, adversarially fact-check each other, then emit schema-valid proposals a human reviewer
+    accepts, edits or declines. The final stage is tool-free and schema-bound: fourteen required fields, enums tied
+    to the application's own vocabularies.
+  </p>
+  <p class="figures"><b>3</b> agents per run &nbsp;·&nbsp; <b>51</b> US jurisdictions &nbsp;·&nbsp; <b>106</b> seeded articles &nbsp;·&nbsp; <b>128K</b> streamed output tokens per stage</p>
+</div>
+
+<div class="study">
+  <div class="study-head">
+    <span class="study-name">Move-Out Copilot</span>
+    <span class="meta">Workflow automation prototype · Jul 2026</span>
+  </div>
+  <p class="study-body">
+    A four-stage pipeline that works a move-out end to end, then stops — because the next step moves someone's
+    deposit. Model tiers chosen by what kind of mistake each stage can make. Pointed at a real property-management
+    export, it revealed the data model assumed gross figures where the document supplies an already-netted ledger:
+    the finding that justified building it.
+  </p>
+  <p class="figures"><b>4</b> agents in the pipeline &nbsp;·&nbsp; <b>2</b> model tiers, by cost of error &nbsp;·&nbsp; <b>~$0.10</b> estimated cost per statement</p>
+</div>
+
+<div class="tail">
+  <div>
+    <h2>Education &amp; Further Study</h2>
+    <ul>
+      <li><strong>Professional Academy Diploma, Advanced Artificial Intelligence for Business</strong> — UCD Professional Academy. Jul – Nov 2026, in progress.</li>
+      <li><strong>BA (Hons), Digital Art</strong> — IADT Dún Laoghaire, NFQ Level 8. 2013 – 2017, second-class honours (2.1).</li>
+      <li><strong>New Frontiers, Phase 2</strong> — Enterprise Ireland, TU Dublin. Oct 2022 – Mar 2023.</li>
+      <li><strong>Professional Diploma, Digital Marketing</strong> — Waterford Institute of Technology. 2018 – 2019.</li>
+    </ul>
+  </div>
+  <div>
+    <h2>Recognition</h2>
+    <ul>
+      <li><strong>New Frontiers Phase 2</strong> recipient — TU Dublin.</li>
+      <li><strong>Microsoft for Startups</strong> portfolio — DocuDynamics.</li>
+      <li><strong>The Sunday Times</strong>, Business section, July 2020 — on how Irish SMEs can become data-driven.</li>
+    </ul>
+  </div>
+</div>
+
+<p class="refs">References available on request</p>
+
+</body>
+</html>

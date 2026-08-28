@@ -1,5 +1,5 @@
 <% content_for :title, "About" %>
-<% content_for :description, "Tom Garrett — technical product manager. Director of Product Engineering at DepositCloud, founder of DocuDynamics, adviser to early-stage Irish companies." %>
+<% content_for :description, "Tom Garrett — technical product leader. Technical Product & Engineering Director at DepositCloud, founder of DocuDynamics, adviser to early-stage Irish companies." %>
 
 <%# ── Intro ──────────────────────────────────────────────────────────────── %>
 <section class="mx-auto max-w-6xl px-6 pt-20 pb-16 sm:px-8 sm:pt-28">
@@ -8,25 +8,29 @@
   <div class="mt-6 grid gap-12 lg:grid-cols-[1.5fr_1fr] lg:gap-20">
     <div>
       <h1 class="max-w-3xl font-display text-[2.4rem] font-semibold leading-[1.05] tracking-tight text-ink-950 sm:text-[3.4rem]">
-        Ten years across design, code and product
+        Ten years across architecture, design and platform ownership
       </h1>
 
       <div class="mt-8 max-w-2xl space-y-4 text-[1.06rem] leading-relaxed text-ink-500">
         <p>
-          I'm a technical product manager. I currently lead product at
+          I'm a technical product leader working at the intersection of scalable software
+          architecture, UX design and platform ownership. I lead product and engineering at
           <span class="font-medium text-ink-900">DepositCloud</span>, a regulated US
           rental-payments platform serving 250,000+ customers, where I own the roadmap across
           three applications — discovery, prioritisation and release planning with a distributed
           team of eight engineers.
         </p>
         <p>
-          I founded <span class="font-medium text-ink-900">DocuDynamics</span> and took it from
-          idea to funded MVP in five months, and I advise early-stage Irish companies on product.
+          I've scaled multi-tenant B2B SaaS to 250k+ users, designed the enterprise API ecosystem
+          that unlocks the accounts above it, and run data-led discovery to decide what deserves
+          to ship. I founded <span class="font-medium text-ink-900">DocuDynamics</span> and took
+          it from idea to funded MVP in five months, and I advise early-stage Irish companies on
+          product.
         </p>
         <p>
           I work the full cycle: discovery and user research, prototyping, experimentation,
-          and shipping. Doing the design and the code alongside the roadmap means the trade-offs
-          are visible when a decision gets made, rather than after it.
+          and shipping. Doing the design and the code alongside the roadmap means system
+          constraints become a roadmap, rather than surfacing after one has been agreed.
         </p>
       </div>
 
@@ -49,12 +53,13 @@
       <p class="eyebrow">Details</p>
       <dl class="mt-4 space-y-4 text-[0.93rem]">
         <div><dt class="text-ink-400">Based</dt><dd class="text-ink-900"><%= contact[:location] %></dd></div>
-        <div><dt class="text-ink-400">Currently</dt><dd class="text-ink-900">Director of Product Engineering, DepositCloud</dd></div>
+        <div><dt class="text-ink-400">Currently</dt><dd class="text-ink-900">Technical Product &amp; Engineering Director, DepositCloud</dd></div>
         <div><dt class="text-ink-400">Also</dt><dd class="text-ink-900">Product consultant &amp; adviser, 2024 – present</dd></div>
         <div>
           <dt class="text-ink-400">Links</dt>
           <dd class="space-y-1">
             <a class="link-underline block text-ink-900" href="<%= contact[:linkedin] %>" rel="noopener"><%= contact[:linkedin_label] %></a>
+            <a class="link-underline block text-ink-900" href="<%= contact[:site] %>" rel="noopener"><%= contact[:site_label] %></a>
           </dd>
         </div>
       </dl>
@@ -65,15 +70,15 @@
 <%# ── Skillset ───────────────────────────────────────────────────────────── %>
 <section class="border-t border-ink-100 bg-panel">
   <div class="mx-auto max-w-6xl px-6 py-20 sm:px-8">
-    <p class="eyebrow">Product skillset</p>
+    <p class="eyebrow">Product &amp; technical skillset</p>
     <div class="mt-10 grid gap-x-12 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
       <% [
+           ["Product strategy &amp; delivery", "Agile planning, multi-phase initiative scoping, cross-timezone execution, stakeholder management."],
            ["Discovery &amp; validation", "User research, UX prototyping, Hotjar and session analysis, data-led decisions on which features to kill and which to scale."],
-           ["Experimentation &amp; rollout", "Feature flags (Flipper), staged releases, analytics instrumentation, measurable launch criteria defined before launch."],
-           ["Delivery &amp; roadmapping", "Agile planning, multi-phase initiative scoping, cross-timezone execution, stakeholder management."],
-           ["Regulated-domain product", "US FinTech and PropTech, SOC 2 Type I, security and compliance treated as product constraints."],
-           ["Technical fluency", "Ruby on Rails, React, Node, SQL/PostgreSQL, GCP, CI/CD."],
-           ["Integration design", "Yardi, Entrata, RealPage, Rent Manager, Twilio, Stripe, Salesforce."]
+           ["Platform &amp; ecosystems", "API contract design, developer experience, feature flags (Flipper), analytics instrumentation."],
+           ["Regulated domains", "US FinTech and PropTech, SOC 2 Type I, security and performance treated as product constraints."],
+           ["Core technical fluency", "Ruby on Rails, React, Node, SQL/PostgreSQL, GCP and AWS infrastructure, CI/CD pipelines, system architecture."],
+           ["API integrations", "Stripe, Salesforce, Yardi, Entrata, RealPage, Rent Manager, Twilio."]
          ].each do |title, body| %>
         <div>
           <h2 class="font-display text-[1.08rem] font-semibold text-ink-950"><%= title.html_safe %></h2>
@@ -95,16 +100,16 @@
           {
             org: "DepositCloud",
             note: "Ireland (US market) — multi-tenant Rails SaaS managing the full US rental security-deposit lifecycle for property management companies and multifamily operators.",
-            titles: [["Director of Product Engineering", "Jul 2026 – Present"], ["Lead Product Engineer", "Jun 2024 – Jul 2026"]],
+            titles: [["Technical Product &amp; Engineering Director", "Aug 2025 – Present"], ["Lead Technical Product Engineer", "Jun 2024 – Aug 2025"]],
             points: [
-              "Own product delivery across three applications serving 250k+ customers (85k+ active accounts, 160k+ enrollments onboarding) — roadmap, prioritisation and release planning with a distributed team of 8 engineers.",
-              "Partnered with company leadership to redesign core user journeys end-to-end, using rapid prototyping and production data to validate each change before full rollout.",
-              "Introduced feature flags with analytics (Flipper) as the standard launch mechanism — every significant feature now ships behind a flag with defined success metrics.",
-              "Scoped, built and launched a Twilio-based contact-centre product in under three months, reducing average handling time, eliminating 100% of third-party vendor costs, and giving operations real-time visibility they previously lacked.",
-              "Defined and delivered a greenfield PMS Sync &amp; Data Analytics product, designing two-way API integrations with Yardi, Entrata, RealPage and Rent Manager — the integrations that unlock enterprise property-manager accounts.",
+              "Define and execute the product roadmap across three applications serving 250k+ customers (85k+ active accounts, 160k+ enrollments onboarding), aligning a distributed team of 8 engineers on daily priority frameworks and release cycles.",
+              "Partnered with company leadership to translate strategic business objectives into rapid-prototype product mockups, using production data to validate core user journeys before full rollout.",
+              "Transformed deployment strategy by introducing feature flags tied to analytics (Flipper), establishing measurable launch metrics that make every release a strategic product decision.",
+              "Scoped, designed and launched a Twilio-based communication platform in under three months, reducing average operational handling time and eliminating 100% of third-party vendor licensing costs.",
+              "Owned the product lifecycle for a greenfield PMS Sync &amp; Integration product, architecting bi-directional APIs with Yardi, Entrata, RealPage and Rent Manager to unlock enterprise-tier market accounts.",
               "Sustained a delivery cadence of 900+ merged PRs and 18–25 major multi-phase initiatives over 24 months through structured Agile planning, weekly one-to-ones and clear initiative scoping.",
-              "Cut the release cycle from two weeks to under four hours by re-architecting CI/CD (Docker, GitHub Actions) — turning releases from a scheduling constraint into a product decision.",
-              "Drove SOC 2 Type I compliance with penetration testing and automated vulnerability scanning integrated into CI."
+              "Accelerated product release velocity from two weeks to under four hours by re-engineering automated CI/CD infrastructure (Docker, GitHub Actions), removing deployment blockers for cross-functional agile teams.",
+              "Treated security as an essential product requirement, embedding SOC 2 Type I compliance, automated penetration testing and vulnerability mitigation directly into the development roadmap."
             ]
           },
           {
@@ -112,18 +117,18 @@
             note: "Advisory and hands-on product engineering for early-stage Irish companies.",
             titles: [["Independent", "2024 – Present"]],
             points: [
-              "<strong class=\"font-medium text-ink-900\">Guest Nutrition</strong> (2024 – present) — product adviser to an Enterprise Ireland High Potential Start-Up; took the product from 0 to 1 and into active trials with industry-leading operators.",
-              "<strong class=\"font-medium text-ink-900\">WealthGuard</strong> (2025 – present) — designed and built a complete wealth-management application in Ruby on Rails, now in production use by 100+ high-net-worth clients."
+              "<strong class=\"font-medium text-ink-900\">Guest Nutrition</strong> (2024 – present) — product adviser to an Enterprise Ireland High Potential Start-Up (HPSU); guided product strategy from 0 to 1 and deployed into active industry field trials.",
+              "<strong class=\"font-medium text-ink-900\">WealthGuard</strong> (2025 – present) — scoped the product specification and built a robust wealth-management application in Ruby on Rails, now in active production use by 100+ high-net-worth clients."
             ]
           },
           {
             org: "DocuDynamics",
-            note: "Compliance-automation startup. The closest job there is to product management: everything from customer discovery to production code.",
+            note: "Compliance-automation startup. End-to-end product development, from customer discovery to production code.",
             titles: [["Founder", "Nov 2022 – Jun 2024"]],
             points: [
-              "Designed and shipped the entire v1 web product from idea to funded MVP in five months (React, Node, AWS), securing Microsoft for Startups and New Frontiers Phase 2 backing.",
-              "Owned the critical user workflow — document upload → AI processing → collaboration — iteratively rebuilding friction points identified through direct user observation.",
-              "Prototyped and validated major UX and architecture changes in production, using data to kill features or double down."
+              "Designed and launched the entire v1 web application from concept to funded MVP in five months (React, Node, AWS), securing Microsoft for Startups and New Frontiers Phase 2 backing.",
+              "Mapped the critical user workflows — document upload → AI pipeline → collaboration — and continuously optimised systemic friction points through direct user discovery sessions.",
+              "Cultivated a culture of disciplined experimentation, using real-time production analytics to kill low-engagement features and scale high-value workflows."
             ]
           },
           {
@@ -131,10 +136,10 @@
             note: nil,
             titles: [["Digital Operations Manager", "Dec 2019 – Nov 2022"]],
             points: [
-              "Owned end-to-end delivery of web and mobile features, combining user research with full-stack implementation, consistently shipping production-ready work in 1–2 week sprints.",
-              "Designed and shipped a Salesforce CRM integration that eliminated 60% of manual data entry, increasing operational capacity by 40%.",
-              "Introduced Hotjar for same-week user testing, cutting feature validation time by 70% and embedding a rapid-prototyping culture in the team.",
-              "Featured in The Sunday Times (Business, Jul 2020) on how Irish SMEs can become data-driven."
+              "Managed end-to-end delivery of web and mobile software features, aligning qualitative user research with sprint goals to ship production-ready work inside two-week iterations.",
+              "Designed a custom Salesforce CRM integration strategy that eliminated 60% of manual data entry and increased operational capacity by 40%.",
+              "Embedded rapid product validation frameworks by introducing Hotjar for user testing, cutting feature evaluation lifecycles by 70%.",
+              "Featured in The Sunday Times (Business, Jul 2020) on leadership in helping Irish SMEs build data-driven operations."
             ]
           },
           {
@@ -143,8 +148,8 @@
             titles: [["Design and engineering", "2016 – 2019"]],
             points: [
               "Full Stack Developer, Gambling.com Group, Dublin (Jan – Dec 2019).",
-              "User Experience Designer, GRID Finance, Dublin (Jan 2018 – Jan 2019) — research, journey mapping and interface design for an SME lending platform.",
-              "Multimedia Designer, Associated Newspapers (Jun 2017 – Jun 2018) and Cauldron Recording Studios (Jun – Sep 2016), Dublin."
+              "User Experience Designer, GRID Finance, Dublin (Jan 2018 – Jan 2019) — journey mapping and application interfaces for an SME lending engine.",
+              "Multimedia Designer, Associated Newspapers and Cauldron Recording Studios, Dublin (2016 – 2018)."
             ]
           }
         ]
@@ -157,7 +162,7 @@
             <div class="mt-3 space-y-1.5">
               <% role[:titles].each do |title, period| %>
                 <div>
-                  <p class="text-[0.92rem] font-medium text-ink-700"><%= title %></p>
+                  <p class="text-[0.92rem] font-medium text-ink-700"><%= title.html_safe %></p>
                   <p class="font-mono text-[0.7rem] text-ink-400"><%= period %></p>
                 </div>
               <% end %>
@@ -191,7 +196,7 @@
         <% [
              ["Professional Academy Diploma, Advanced Artificial Intelligence for Business", "UCD Professional Academy · Jul – Nov 2026, in progress"],
              ["BA (Hons), Digital Art", "IADT Dún Laoghaire, NFQ Level 8 · 2013 – 2017, second-class honours (2.1)"],
-             ["New Frontiers, Phase 2", "TU Dublin · Oct 2022 – Mar 2023"],
+             ["New Frontiers, Phase 2 — Enterprise Ireland", "TU Dublin · Oct 2022 – Mar 2023"],
              ["Professional Diploma, Digital Marketing", "Waterford Institute of Technology · 2018 – 2019"]
            ].each do |title, detail| %>
           <li>
@@ -206,8 +211,8 @@
       <p class="eyebrow">Recognition</p>
       <ul class="mt-6 space-y-5">
         <% [
-             ["New Frontiers Phase 2", "TU Dublin"],
-             ["Microsoft for Startups", "DocuDynamics"],
+             ["New Frontiers Phase 2 recipient", "TU Dublin"],
+             ["Microsoft for Startups portfolio", "DocuDynamics"],
              ["The Sunday Times", "Business feature, July 2020 — on how Irish SMEs can become data-driven"]
            ].each do |title, detail| %>
           <li>

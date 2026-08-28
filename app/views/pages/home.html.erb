@@ -1,8 +1,8 @@
-<% content_for :description, "Tom Garrett — technical product manager in Dublin. Case studies in voice infrastructure, personal wealth, AI legal intelligence and workflow automation." %>
+<% content_for :description, "Tom Garrett — technical product leader in Dublin. Case studies in voice infrastructure, personal wealth, AI legal intelligence and workflow automation." %>
 
 <%# ── Hero ───────────────────────────────────────────────────────────────── %>
 <section class="mx-auto max-w-6xl px-6 pt-20 pb-16 sm:px-8 sm:pt-28 sm:pb-24">
-  <p class="eyebrow">Technical product management · Design — code — product</p>
+  <p class="eyebrow">Technical product management · Platform ecosystems &amp; architecture</p>
 
   <h1 class="mt-6 max-w-4xl font-display text-[2.6rem] font-semibold leading-[1.02] tracking-tight text-ink-950 sm:text-[4rem] lg:text-[4.6rem]">
     I designed, built, and then audited every system on this site.
@@ -11,8 +11,9 @@
   <div class="mt-9 grid gap-10 lg:grid-cols-[1.35fr_1fr] lg:items-start lg:gap-16">
     <div class="max-w-xl space-y-4 text-[1.06rem] leading-relaxed text-ink-500">
       <p>
-        I'm <span class="font-medium text-ink-900">Tom Garrett</span>, a technical product manager
-        with ten years across design, code and product. I'm Director of Product Engineering at
+        I'm <span class="font-medium text-ink-900">Tom Garrett</span>, a technical product leader
+        with ten years across software architecture, design and platform ownership. I'm Technical
+        Product &amp; Engineering Director at
         <span class="font-medium text-ink-900">DepositCloud</span>, a regulated US rental-payments
         platform serving 250,000+ customers, where I own the roadmap across three applications —
         discovery and scoping through to what actually ships.
@@ -20,8 +21,8 @@
       <p>
         Before that I founded DocuDynamics and took it from idea to funded MVP in five months.
         I advise early-stage Irish companies on product, and I still write the code — so I spec
-        against real constraints rather than around them, and the case studies below are about
-        what the systems actually do, not what the slides said they would.
+        against real system constraints rather than around them, and the case studies below are
+        about what the systems actually do, not what the slides said they would.
       </p>
     </div>
 
@@ -40,7 +41,7 @@
     <% [
          ["250k+", "Customers on the platform I lead product for"],
          ["3", "Applications, one distributed team of 8"],
-         ["900+", "Merged PRs across 24 months"],
+         ["4", "Bi-directional PMS integrations in production"],
          ["2 wks → 4 hrs", "Release cycle after re-architecting CI/CD"]
        ].each do |value, label| %>
       <div>
@@ -109,13 +110,13 @@
            ["02", "Experimentation &amp; rollout",
             "Feature flags with analytics as the standard launch mechanism — every significant feature ships behind a flag with success metrics defined before it goes out."],
            ["03", "Delivery &amp; roadmapping",
-            "Agile planning across timezones, multi-phase initiative scoping, and a release cycle short enough that shipping is a product decision rather than a scheduling constraint."],
+            "Agile planning across timezones, multi-phase initiative scoping, and a release cycle re-architected from two weeks to under four hours — short enough that shipping is a product decision rather than a scheduling constraint."],
            ["04", "Regulated-domain product",
-            "US FinTech and PropTech: SOC 2 Type I, penetration testing and vulnerability scanning wired into CI. Compliance treated as a product requirement, not an afterthought."],
-           ["05", "Integration design",
-            "Two-way API integrations with the property-management systems that unlock enterprise accounts — Yardi, Entrata, RealPage, Rent Manager — plus Twilio, Stripe and Salesforce."],
+            "US FinTech and PropTech: SOC 2 Type I, penetration testing and vulnerability scanning wired into CI. Security and performance treated as product requirements, not afterthoughts."],
+           ["05", "Platform &amp; ecosystems",
+            "API contract design and developer experience: bi-directional integrations with the four property-management systems that unlock enterprise accounts — Yardi, Entrata, RealPage, Rent Manager — plus a Twilio voice platform carrying ~5,000 calls a month, Stripe and Salesforce."],
            ["06", "Building it myself",
-            "Ruby on Rails, React, Node, SQL, GCP and CI/CD. Close enough to the implementation that a roadmap estimate is informed by the code rather than inferred from it."]
+            "Ruby on Rails, React, Node, SQL/PostgreSQL, GCP and AWS, CI/CD and system architecture — down to a test-suite rebuild that took one product from 31.9% to 91.6% line coverage. Close enough to the implementation that a roadmap estimate is informed by the code rather than inferred from it."]
          ].each do |num, title, body| %>
         <div>
           <span class="font-mono text-[0.7rem] text-ink-300"><%= num %></span>

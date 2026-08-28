@@ -38,7 +38,7 @@ class CaseStudy
         ["~5,000", "Calls a month in production"],
         ["~2 min", "Average handled call"],
         ["9", "Languages in the IVR"],
-        ["18 mo", "Dec 2024 – Jun 2026"]
+        ["28", "Webhook & agent-action endpoints"]
       ],
       tags: %w[Twilio\ Programmable\ Voice Rails WebSockets Redis Google\ Cloud\ Run],
       highlights: [

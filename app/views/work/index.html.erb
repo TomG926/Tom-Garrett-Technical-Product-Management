@@ -8,8 +8,29 @@
   </h1>
   <p class="mt-6 max-w-2xl text-[1.06rem] leading-relaxed text-ink-500">
     Each one covers the product decisions and what they cost, a failure worth the space, and a
-    ranked list of what I would do next. All four are written up in full on this site.
+    ranked list of what I would do next. The numbers in them are drawn from the application source,
+    the provider's own logs and the running instance — each study says which, and says so where a
+    figure could not be verified.
   </p>
+
+  <%# Computed from the catalogue rather than typed, so the counts cannot drift from ALL. %>
+  <% prototypes = @case_studies.count { |c| c.status.match?(/prototype/i) } %>
+  <dl class="mt-11 grid max-w-3xl grid-cols-2 gap-x-6 gap-y-7 border-t border-ink-100 pt-8 sm:grid-cols-4">
+    <% [
+         [@case_studies.size.to_s, "Systems written up in full"],
+         [(@case_studies.size - prototypes).to_s, "Running in production or with users"],
+         ["~5,000", "Calls a month through the voice platform"],
+         ["91.6%", "Line coverage on the wealth platform, 1,097 tests"]
+       ].each do |value, label| %>
+      <div>
+        <dt class="sr-only"><%= label %></dt>
+        <dd>
+          <span class="block font-display text-[1.6rem] font-semibold leading-none tabular-nums tracking-tight text-ink-950"><%= value %></span>
+          <span class="mt-2 block text-[0.78rem] leading-snug text-ink-400"><%= label %></span>
+        </dd>
+      </div>
+    <% end %>
+  </dl>
 </section>
 
 <section class="border-t border-ink-100 bg-panel">
