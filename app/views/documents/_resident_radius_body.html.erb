@@ -14,7 +14,7 @@
     </div>
 
     <figure>
-      <img src="/case-studies/img/resident-radius/agent-dashboard.png" alt="The agent home screen: a Make a Call panel with country prefix and number field, a WebSocket connection indicator reading Online / Fully Connected, a call-availability toggle, a voicemail table with playback and Create Client Profile links, an empty missed-calls list, and two bar charts of today's and this week's call analytics.">
+      <img src="/case-studies/img/resident-radius/agent-dashboard.webp" alt="The agent home screen: a Make a Call panel with country prefix and number field, a WebSocket connection indicator reading Online / Fully Connected, a call-availability toggle, a voicemail table with playback and Create Client Profile links, an empty missed-calls list, and two bar charts of today's and this week's call analytics.">
       <figcaption><span class="fignum">Fig. 1</span>The agent's home screen. Outbound dialler, live WebSocket health indicator, availability toggle, inbound voicemail queue, and personal call analytics — the four things an agent needs before a call and the two they need after one.</figcaption>
     </figure>
   </header>
@@ -141,17 +141,17 @@
 
     <div class="fig-pair">
       <figure>
-        <img src="/case-studies/img/resident-radius/incoming-call.png" alt="An incoming-call card overlaying the agent dashboard: a green Incoming Call header reading Tap to answer, the caller number +1 415 555 0134, client information showing name, email and caller type, and a full-width Accept Call button.">
+        <img src="/case-studies/img/resident-radius/incoming-call.webp" alt="An incoming-call card overlaying the agent dashboard: a green Incoming Call header reading Tap to answer, the caller number +1 415 555 0134, client information showing name, email and caller type, and a full-width Accept Call button.">
         <figcaption><span class="fignum">Fig. 2</span><strong>Inbound.</strong> The call arrives as a lightweight prompt with the caller number resolved, so the agent decides to answer with context rather than after it.</figcaption>
       </figure>
       <figure>
-        <img src="/case-studies/img/resident-radius/sign-in.png" alt="The log-in screen: a centred card with email and password fields, a Remember me checkbox and a Log in button, under a blue application bar.">
+        <img src="/case-studies/img/resident-radius/sign-in.webp" alt="The log-in screen: a centred card with email and password fields, a Remember me checkbox and a Log in button, under a blue application bar.">
         <figcaption><span class="fignum">Fig. 3</span><strong>Access.</strong> Device-authenticated sessions; agents are provisioned by a supervisor and deactivated rather than deleted, preserving call history.</figcaption>
       </figure>
     </div>
 
     <figure>
-      <img src="/case-studies/img/resident-radius/active-call.png" alt="The active call workspace in three columns: left, the caller number, a live duration of 00:02:17, client information, a transfer-target selector, a DTMF dial pad and Hold, Leave, Transfer and Hang Up buttons; centre, an editable client profile form; right, the client's notes history and a new-note box.">
+      <img src="/case-studies/img/resident-radius/active-call.webp" alt="The active call workspace in three columns: left, the caller number, a live duration of 00:02:17, client information, a transfer-target selector, a DTMF dial pad and Hold, Leave, Transfer and Hang Up buttons; centre, an editable client profile form; right, the client's notes history and a new-note box.">
       <figcaption><span class="fignum">Fig. 4</span>The active call workspace — the densest screen in the product, and deliberately so. Left: call identity, live duration, transfer target, DTMF dial pad, and the four irreversible actions (hold, leave, transfer, hang up). Centre: the caller's profile, editable during the call. Right: notes history and a new-note box. An agent completes wrap-up before hanging up instead of after, which is the only reliable way to get notes written at all.</figcaption>
     </figure>
   </section>
@@ -232,22 +232,22 @@
     </div>
 
     <figure>
-      <img src="/case-studies/img/resident-radius/admin-dashboard.png" alt="The Manage Users admin screen: a timeframe selector, an Overall Analytics panel with a metrics bar chart and a Calls by Status pie chart split between completed, busy, no-answer and failed, then an agent table listing name, email, admin, available and active columns with Edit, Languages, Deactivate and Delete actions.">
-      <figcaption><span class="fignum">Fig. 5</span>&ldquo;Who is staffed, and how are we doing?&rdquo; Org-wide analytics over a selectable timeframe sit above the agent roster. Each agent row carries the two states that matter operationally — admin rights and availability — plus language assignment and a deactivate action that preserves their call history rather than deleting it.</figcaption>
+      <img src="/case-studies/img/resident-radius/admin-dashboard.webp" alt="The Manage Users admin screen: a timeframe selector and an Overall Analytics panel holding a metrics bar chart and a Calls by Status pie chart split between completed, busy, no-answer and failed.">
+      <figcaption><span class="fignum">Fig. 5</span>&ldquo;How are we doing?&rdquo; Org-wide analytics over a selectable timeframe. The agent roster sits directly below this panel and is cropped out here: each row carries the two states that matter operationally — admin rights and availability — plus language assignment and a deactivate action that preserves an agent's call history rather than deleting it.</figcaption>
     </figure>
 
     <figure>
-      <img src="/case-studies/img/resident-radius/queue-positions.png" alt="The Agent Queue Positions screen: a status-indicator key showing Online, Available (Database) and Available (Redis) as three separate marks, a Refresh View button, and a table of agents against nine language columns — EN, FR, PT, ES, ZH, FA, DA, KO, RU — each agent name carrying its three indicators.">
+      <img src="/case-studies/img/resident-radius/queue-positions.webp" alt="The Agent Queue Positions screen: a status-indicator key showing Online, Available (Database) and Available (Redis) as three separate marks, a Refresh View button, and a table of agents against nine language columns — EN, FR, PT, ES, ZH, FA, DA, KO, RU — each agent name carrying its three indicators.">
       <figcaption><span class="fignum">Fig. 6</span>&ldquo;Who is actually next?&rdquo; Queue position per agent per language. The three status indicators are the important detail: online, available (database), and available (Redis) are shown separately, because during the project we learned that these three can disagree — and that a supervisor debugging a routing complaint needs to see the disagreement, not an averaged-out summary.</figcaption>
     </figure>
 
     <div class="fig-pair">
       <figure>
-        <img src="/case-studies/img/resident-radius/call-monitoring.png" alt="The Call Monitoring screen with Current Alerts and Alert History tabs, showing an all-clear state: a green tick, the heading All Good! and the line No long-running calls at the moment.">
+        <img src="/case-studies/img/resident-radius/call-monitoring.webp" alt="The Call Monitoring screen with Current Alerts and Alert History tabs, showing an all-clear state: a green tick, the heading All Good! and the line No long-running calls at the moment.">
         <figcaption><span class="fignum">Fig. 7</span>&ldquo;Is anything falling on the floor right now?&rdquo; Live long-call alerts with an explicit all-clear state, and a separate history tab so that resolutions — whether taken by a supervisor or by the automatic timeout — remain auditable after the fact.</figcaption>
       </figure>
       <figure>
-        <img src="/case-studies/img/resident-radius/client-profiles.png" alt="The Client Profiles screen: a search box, an email filter, Apply, Clear and New Client Profile buttons, and a table of eight caller records with name, phone number, email, client type, management, community and View / Edit actions.">
+        <img src="/case-studies/img/resident-radius/client-profiles.webp" alt="The Client Profiles screen: a search box, an email filter, Apply, Clear and New Client Profile buttons, and a table of eight caller records with name, phone number, email, client type, management, community and View / Edit actions.">
         <figcaption><span class="fignum">Fig. 8</span>The caller CRM. Searchable by name, phone, or email. Profiles are created automatically on first contact, which means the searchable history builds itself from call traffic instead of depending on agents remembering to create records.</figcaption>
       </figure>
     </div>
