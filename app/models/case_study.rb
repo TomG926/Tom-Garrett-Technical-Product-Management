@@ -22,7 +22,7 @@ class CaseStudy
   ALL = [
     new(
       slug: "resident-radius",
-      title: "Resident Radius Contact Centre",
+      title: "Multilingual Contact Centre",
       kicker: "Voice infrastructure",
       summary: "A multilingual, browser-based call centre on Twilio Programmable Voice — then made to survive the parts of telephony nobody controls.",
       blurb: "Residents call one number, choose a language, and reach an agent who speaks it. " \
@@ -48,11 +48,11 @@ class CaseStudy
         "An incident review that converted a class of silent failures into visible, recoverable ones, and wrote down the items it did not close."
       ],
       cover: "resident-radius.webp",
-      cover_alt: "The Resident Radius agent home screen: outbound dialler, WebSocket health indicator, availability toggle, voicemail queue and personal call analytics."
+      cover_alt: "The agent home screen: outbound dialler, WebSocket health indicator, availability toggle, voicemail queue and personal call analytics."
     ),
     new(
       slug: "wealthguard",
-      title: "WealthGuard Dashboards",
+      title: "AI-Assisted Household Wealth Dashboards",
       kicker: "Personal wealth platform",
       summary: "A household balance sheet for the Irish market — then a stretch spent proving every number on it was the right number.",
       blurb: "A member records what they own, owe, earn and spend; the product turns it into one " \
@@ -78,11 +78,11 @@ class CaseStudy
         "A test-suite rebuild that took coverage from 31.9% to 91.6% and surfaced defects nobody had reported — including a bank integration that had never once produced a record."
       ],
       cover: "wealthguard.webp",
-      cover_alt: "The WealthGuard financial overview: account tiles, an assets-versus-liabilities donut and an income-versus-expenses donut."
+      cover_alt: "The financial overview: account tiles, an assets-versus-liabilities donut and an income-versus-expenses donut."
     ),
     new(
       slug: "depositlex",
-      title: "DepositLex",
+      title: "Self-Updating AI Legal Knowledge Base",
       kicker: "AI legal intelligence",
       summary: "A knowledge base of US deposit law that keeps itself current — and never writes to itself.",
       blurb: "Three Claude agents research the live web, adversarially fact-check each other, then " \
@@ -107,11 +107,11 @@ class CaseStudy
         "A failure worth the space: a search scoped outside the output enum produced accurate UK law labelled New York."
       ],
       cover: "depositlex.webp",
-      cover_alt: "The DepositLex reviewer dashboard: article and jurisdiction counters, the AI search console, and an inbox of proposals awaiting review."
+      cover_alt: "The reviewer dashboard: article and jurisdiction counters, the AI search console, and an inbox of proposals awaiting review."
     ),
     new(
       slug: "move-out-copilot",
-      title: "Move-Out Copilot",
+      title: "Human-Gated AI Move-Out Pipeline",
       kicker: "Workflow automation prototype",
       summary: "A four-stage pipeline that works a move-out end to end, then stops — because the next step moves someone's deposit.",
       blurb: "Built to answer a question a design document cannot: would a reviewer actually trust " \
@@ -136,7 +136,7 @@ class CaseStudy
         "Pointed at a real property-management export, it revealed the data model assumed gross figures where the document supplies an already-netted ledger."
       ],
       cover: "move-out-copilot.webp",
-      cover_alt: "The Move-Out Copilot review screen: the statement PDF beside the extracted fields, matched account, classification, reconciliation and proposed outcome."
+      cover_alt: "The review screen: the statement PDF beside the extracted fields, matched account, classification, reconciliation and proposed outcome."
     )
   ].freeze
 

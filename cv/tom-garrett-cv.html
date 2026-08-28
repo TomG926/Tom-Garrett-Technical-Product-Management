@@ -138,6 +138,17 @@
   .title-line + ul { margin-top: 4pt; }
 
   /* ── Case studies ───────────────────────────────────────────────────── */
+  /* The URL sits under the heading rather than inside it: the headings are
+     uppercase and widely letter-spaced, and a full repository path set that way
+     runs past the measure. */
+  .section-note {
+    margin: 3pt 0 0;
+    font-family: "IBM Plex Mono", Consolas, monospace;
+    font-size: 7.4pt;
+    color: var(--ink-400);
+  }
+  .section-note a { color: var(--accent); }
+
   .study { margin-top: 5.5pt; break-inside: avoid; }
   .study:first-of-type { margin-top: 6pt; }
   .study-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10pt; }
@@ -173,7 +184,7 @@
   <h1>Tom Garrett</h1>
   <p class="strapline">Technical Product Management · Platform Ecosystems &amp; Architecture</p>
   <p class="contacts">
-    <span>tgarrett.92@icloud.com</span><span class="sep">·</span><span>linkedin.com/in/thomasgarrett-digital</span><span class="sep">·</span><span>productdevelopment.ie</span><span class="sep">·</span><span>Dublin, Ireland</span>
+    <span>tgarrett.92@icloud.com</span><span class="sep">·</span><span>linkedin.com/in/thomasgarrett-digital</span><span class="sep">·</span><span>tomg926.github.io/Tom-Garrett-Technical-Product-Management</span><span class="sep">·</span><span>Dublin, Ireland</span>
   </p>
 </header>
 
@@ -274,11 +285,13 @@
   </ul>
 </div>
 
-<h2>Selected Case Studies — written up in full at productdevelopment.ie</h2>
+<h2>Selected Case Studies</h2>
+<p class="section-note">Written up in full at
+  <a href="https://tomg926.github.io/Tom-Garrett-Technical-Product-Management/">tomg926.github.io/Tom-Garrett-Technical-Product-Management</a></p>
 
 <div class="study">
   <div class="study-head">
-    <span class="study-name">Resident Radius Contact Centre</span>
+    <span class="study-name">Multilingual Contact Centre</span>
     <span class="meta">Voice infrastructure · Dec 2024 – Jun 2026</span>
   </div>
   <p class="study-body">
@@ -291,7 +304,7 @@
 
 <div class="study">
   <div class="study-head">
-    <span class="study-name">WealthGuard Dashboards</span>
+    <span class="study-name">AI-Assisted Household Wealth Dashboards</span>
     <span class="meta">Personal wealth platform · Oct 2025 – Aug 2026</span>
   </div>
   <p class="study-body">
@@ -304,7 +317,7 @@
 
 <div class="study">
   <div class="study-head">
-    <span class="study-name">DepositLex</span>
+    <span class="study-name">Self-Updating AI Legal Knowledge Base</span>
     <span class="meta">AI legal intelligence · Jun – Aug 2026</span>
   </div>
   <p class="study-body">
@@ -318,7 +331,7 @@
 
 <div class="study">
   <div class="study-head">
-    <span class="study-name">Move-Out Copilot</span>
+    <span class="study-name">Human-Gated AI Move-Out Pipeline</span>
     <span class="meta">Workflow automation prototype · Jul 2026</span>
   </div>
   <p class="study-body">

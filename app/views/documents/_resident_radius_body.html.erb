@@ -3,7 +3,7 @@
   <!-- ============================ COVER ============================ -->
   <header class="cover">
     <span class="eyebrow">Product case study &middot; Voice infrastructure</span>
-    <h1>Resident Radius<br>Contact Centre</h1>
+    <h1>Multilingual<br>Contact Centre</h1>
     <p class="lede">Building a multilingual, browser-based call centre on Twilio Programmable Voice — and then making it survive the parts of telephony that nobody controls: carrier rejections, out-of-order webhooks, and agents whose state lives in two places at once.</p>
 
     <div class="cover-meta">
@@ -14,7 +14,7 @@
     </div>
 
     <figure>
-      <img src="/case-studies/img/resident-radius/agent-dashboard.png" alt="The Resident Radius agent home screen: a Make a Call panel with country prefix and number field, a WebSocket connection indicator reading Online / Fully Connected, a call-availability toggle, a voicemail table with playback and Create Client Profile links, an empty missed-calls list, and two bar charts of today's and this week's call analytics.">
+      <img src="/case-studies/img/resident-radius/agent-dashboard.png" alt="The agent home screen: a Make a Call panel with country prefix and number field, a WebSocket connection indicator reading Online / Fully Connected, a call-availability toggle, a voicemail table with playback and Create Client Profile links, an empty missed-calls list, and two bar charts of today's and this week's call analytics.">
       <figcaption><span class="fignum">Fig. 1</span>The agent's home screen. Outbound dialler, live WebSocket health indicator, availability toggle, inbound voicemail queue, and personal call analytics — the four things an agent needs before a call and the two they need after one.</figcaption>
     </figure>
   </header>
@@ -24,7 +24,7 @@
     <div class="opener"><span class="secnum">01</span><h2>Executive summary</h2></div>
 
     <div class="col">
-      <p>Resident Radius Contact Centre is a custom contact centre that replaces off-the-shelf call centre software for a property-management support team. Residents call one number, choose a language, and are routed to an agent who speaks it. Agents take and place calls entirely in the browser — no desk phone, no softphone install.</p>
+      <p>The system is a custom contact centre that replaces off-the-shelf call centre software for a property-management support team. Residents call one number, choose a language, and are routed to an agent who speaks it. Agents take and place calls entirely in the browser — no desk phone, no softphone install.</p>
       <p>The product covers the full lifecycle of a support call: an inbound IVR with nine languages, language-aware round-robin routing, two-party conferences, warm transfer, hold, voicemail capture, a lightweight caller CRM, per-agent analytics, and a supervisor console that escalates calls nobody has answered.</p>
       <p>The interesting product work was not the happy path. It was everything that happens when a distributed telephony system disagrees with itself — and the case study below is organised around that: what we built, then the three classes of failure we had to design against, then a production incident that forced the largest single change to how the system handles failure.</p>
     </div>
@@ -145,7 +145,7 @@
         <figcaption><span class="fignum">Fig. 2</span><strong>Inbound.</strong> The call arrives as a lightweight prompt with the caller number resolved, so the agent decides to answer with context rather than after it.</figcaption>
       </figure>
       <figure>
-        <img src="/case-studies/img/resident-radius/sign-in.png" alt="The Resident Radius log-in screen: a centred card with email and password fields, a Remember me checkbox and a Log in button, under a blue application bar.">
+        <img src="/case-studies/img/resident-radius/sign-in.png" alt="The log-in screen: a centred card with email and password fields, a Remember me checkbox and a Log in button, under a blue application bar.">
         <figcaption><span class="fignum">Fig. 3</span><strong>Access.</strong> Device-authenticated sessions; agents are provisioned by a supervisor and deactivated rather than deleted, preserving call history.</figcaption>
       </figure>
     </div>

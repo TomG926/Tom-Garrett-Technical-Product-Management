@@ -7,8 +7,8 @@ module ApplicationHelper
     email: "tgarrett.92@icloud.com",
     linkedin: "https://linkedin.com/in/thomasgarrett-digital",
     linkedin_label: "linkedin.com/in/thomasgarrett-digital",
-    site: "https://productdevelopment.ie",
-    site_label: "productdevelopment.ie",
+    site: "https://tomg926.github.io/Tom-Garrett-Technical-Product-Management/",
+    site_label: "tomg926.github.io/Tom-Garrett-Technical-Product-Management",
     location: "Dublin, Ireland",
     cv: "/tom-garrett-cv.pdf"
   }.freeze
