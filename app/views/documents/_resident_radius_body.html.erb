@@ -25,7 +25,7 @@
 
     <div class="col">
       <p>The system is a custom contact centre that replaces off-the-shelf call centre software for a property-management support team. Residents call one number, choose a language, and are routed to an agent who speaks it. Agents take and place calls entirely in the browser — no desk phone, no softphone install.</p>
-      <p>The product covers the full lifecycle of a support call: an inbound IVR with nine languages, language-aware round-robin routing, two-party conferences, warm transfer, hold, voicemail capture, a lightweight caller CRM, per-agent analytics, and a supervisor console that escalates calls nobody has answered.</p>
+      <p>The product covers the full lifecycle of a support call: an inbound IVR with nine languages, language-aware round-robin routing, two-party conferences, warm transfer, hold, voicemail capture, a lightweight caller CRM, a bi-directional HubSpot sync for the commercial record, per-agent analytics, and a supervisor console that escalates calls nobody has answered.</p>
       <p>The interesting product work was not the happy path. It was everything that happens when a distributed telephony system disagrees with itself — and the case study below is organised around that: what we built, then the three classes of failure we had to design against, then a production incident that forced the largest single change to how the system handles failure.</p>
     </div>
 
@@ -73,8 +73,8 @@
           </tr>
           <tr>
             <td><span class="t">Caller context at answer time</span></td>
-            <td>Off-the-shelf CRM integrations assume the caller already exists in an external CRM. This team's caller data lives in the same product as the deposit account it relates to.</td>
-            <td>Caller lookup by phone number, auto-created profiles, and notes written during the call in the same modal.</td>
+            <td>Seat-priced products expect the caller to already exist in an external CRM, so resident context would have to be mirrored out of the product that owns the deposit account and back again on every call.</td>
+            <td>Two layers, each holding what it owns: caller lookup by phone number, auto-created profiles and in-call notes beside the deposit account, with the commercial record synced out to HubSpot so sales and support see the same account without the call path depending on it.</td>
           </tr>
           <tr>
             <td><span class="t">Supervisor intervention</span></td>
@@ -454,7 +454,7 @@
       <table>
         <thead><tr><th style="width:20%">Phase</th><th style="width:18%">When</th><th>Focus</th></tr></thead>
         <tbody>
-          <tr><td><span class="t">Foundation</span></td><td class="num">Dec 2024</td><td>Multi-agent round robin, analytics, and the first working call path.</td></tr>
+          <tr><td><span class="t">Foundation</span></td><td class="num">Dec 2024 – Feb 2025</td><td>Multi-agent round robin, analytics, and the first working call path — production calls inside three months.</td></tr>
           <tr><td><span class="t">Call control</span></td><td class="num">2025</td><td>Transfer logic, hang-up handling, dial pad, voicemail, recording, client notes.</td></tr>
           <tr><td><span class="t">Reliability</span></td><td class="num">late 2025</td><td>Busy-state management, race conditions, reconnection, timeout behaviour, debug instrumentation.</td></tr>
           <tr><td><span class="t">Scale &amp; ops</span></td><td class="num">early 2026</td><td>Background jobs moved onto managed task queues, caching, long-call alerting, staging Redis separation.</td></tr>
@@ -464,7 +464,7 @@
     </div>
 
     <div class="col" style="margin-top:2.5rem">
-      <p>The shape of that timeline is itself the finding: features dominated the first nine months, and reliability dominated the last nine. For a voice product that ordering is close to unavoidable — you cannot discover which failure modes matter until real calls are flowing — but a future project would budget for it explicitly rather than treating it as overrun.</p>
+      <p>The shape of that timeline is itself the finding. The product was carrying real calls inside three months; the fifteen months after that were spent making it survive telephony. Features dominated the first nine, reliability the last nine. For a voice product that ordering is close to unavoidable — you cannot discover which failure modes matter until real calls are flowing — but a future project would budget for it explicitly rather than treating it as overrun.</p>
     </div>
   </section>
 
