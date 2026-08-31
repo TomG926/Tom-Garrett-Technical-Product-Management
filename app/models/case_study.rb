@@ -54,7 +54,7 @@ class CaseStudy
       slug: "wealthguard",
       title: "AI-Assisted High-Net Wealth Dashboard",
       kicker: "Personal wealth platform",
-      summary: "A household balance sheet for the Irish market — then a stretch spent proving every number on it was the right number.",
+      summary: "A high-net-worth household balance sheet for the Irish market, fed by open banking and document AI — then a stretch spent proving every number on it was the right number.",
       blurb: "A member records what they own, owe, earn and spend; the product turns it into one " \
              "balance sheet, a retirement outlook, a protection-gap analysis and an honest trend line. " \
              "Built for an adviser-led business, so an administrator prepares the account before the " \

@@ -73,7 +73,7 @@
           </tr>
           <tr>
             <td><span class="t">Caller context at answer time</span></td>
-            <td>CRM integrations assume a CRM. This team's caller data lives in the same product as the deposit account it relates to.</td>
+            <td>Off-the-shelf CRM integrations assume the caller already exists in an external CRM. This team's caller data lives in the same product as the deposit account it relates to.</td>
             <td>Caller lookup by phone number, auto-created profiles, and notes written during the call in the same modal.</td>
           </tr>
           <tr>
@@ -132,7 +132,8 @@
           <tr><td><span class="t">Warm transfer</span></td><td>Agent picks a target, caller goes on hold, second agent is dialled in.</td><td>Cancellable mid-flight; original agent can stay or leave.</td></tr>
           <tr><td><span class="t">Voicemail</span></td><td>Captures a recording when no agent is reachable, or on supervisor action.</td><td>Recording is attached to the caller's profile, surfaced on the dashboard.</td></tr>
           <tr><td><span class="t">Caller CRM</span></td><td>Profile per phone number with name, email, type, company, community, and notes.</td><td>Auto-created on first contact so no call is ever anonymous twice.</td></tr>
-          <tr><td><span class="t">Analytics</span></td><td>Per-agent and org-wide call counts, durations, and missed calls by day and week.</td><td>Counts distinct call SIDs, so multi-leg conferences aren't double-counted.</td></tr>
+          <tr><td><span class="t">HubSpot sync</span></td><td>Logs call activity and contacts to the commercial CRM from call events, and raises tickets from a call.</td><td>Bi-directional. Distinct from the caller CRM above: that holds resident context at answer time, this keeps the account record current.</td></tr>
+<tr><td><span class="t">Analytics</span></td><td>Per-agent and org-wide call counts, durations, and missed calls by day and week.</td><td>Counts distinct call SIDs, so multi-leg conferences aren't double-counted.</td></tr>
           <tr><td><span class="t">Live monitoring</span></td><td>Flags inbound calls waiting too long; supervisor can answer or force voicemail.</td><td>Alerts in Redis with a 24h TTL; resolutions persisted for history.</td></tr>
           <tr><td><span class="t">Recording</span></td><td>Inbound and outbound call recording with hold music and transfer support.</td><td>Recording status handled as its own webhook lifecycle.</td></tr>
         </tbody>
