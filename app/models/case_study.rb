@@ -21,7 +21,7 @@ class CaseStudy
 
   ALL = [
     new(
-      slug: "resident-radius",
+      slug: "multilingual-contact-centre",
       title: "Multilingual Contact Centre",
       kicker: "Voice infrastructure",
       summary: "A multilingual, browser-based call centre on Twilio Programmable Voice — then made to survive the parts of telephony nobody controls.",
@@ -29,9 +29,9 @@ class CaseStudy
              "Agents take and place calls entirely in the browser. The interesting product work " \
              "was not the happy path — it was everything that happens when a distributed telephony " \
              "system disagrees with itself.",
-      role: "Product & delivery lead",
+      role: "Lead developer",
       period: "Dec 2024 – Jun 2026",
-      team: "7 contributors",
+      team: "2 developers + product owner",
       status: "In production",
       accent: "#1D6FE0",
       stats: [
@@ -51,7 +51,7 @@ class CaseStudy
       cover_alt: "The agent home screen: outbound dialler, WebSocket health indicator, availability toggle, voicemail queue and personal call analytics."
     ),
     new(
-      slug: "wealthguard",
+      slug: "ai-assisted-high-net-wealth-dashboard",
       title: "AI-Assisted High-Net Wealth Dashboard",
       kicker: "Personal wealth platform",
       summary: "A high-net-worth household balance sheet for the Irish market, fed by open banking and document AI — then a stretch spent proving every number on it was the right number.",
@@ -59,7 +59,7 @@ class CaseStudy
              "balance sheet, a retirement outlook, a protection-gap analysis and an honest trend line. " \
              "Built for an adviser-led business, so an administrator prepares the account before the " \
              "owner is ever invited in.",
-      role: "Product & delivery lead",
+      role: "Sole developer",
       period: "Oct 2025 – Aug 2026",
       team: "Solo build",
       status: "Running",
@@ -81,14 +81,14 @@ class CaseStudy
       cover_alt: "The financial overview: account tiles, an assets-versus-liabilities donut and an income-versus-expenses donut."
     ),
     new(
-      slug: "depositlex",
+      slug: "self-updating-ai-legal-knowledge-base",
       title: "Self-Updating AI Legal Knowledge Base",
       kicker: "AI legal intelligence",
       summary: "A knowledge base of US deposit law that keeps itself current — and never writes to itself.",
       blurb: "Three Claude agents research the live web, adversarially fact-check each other, then " \
              "emit schema-valid proposals. A reviewer accepts, edits or declines. Nothing reaches the " \
              "library without a person, which is the whole product rather than a safety feature bolted on.",
-      role: "Product & engineering lead",
+      role: "Sole developer",
       period: "Jun – Aug 2026",
       team: "Solo build",
       status: "Running",
@@ -110,14 +110,14 @@ class CaseStudy
       cover_alt: "The reviewer dashboard: article and jurisdiction counters, the AI search console, and an inbox of proposals awaiting review."
     ),
     new(
-      slug: "move-out-copilot",
+      slug: "human-gated-ai-move-out-pipeline",
       title: "Human-Gated AI Move-Out Pipeline",
       kicker: "Workflow automation prototype",
       summary: "A four-stage pipeline that works a move-out end to end, then stops — because the next step moves someone's deposit.",
       blurb: "Built to answer a question a design document cannot: would a reviewer actually trust " \
              "this, and what does the screen need to show before they would? Faithful to the real " \
              "workflow down to the status codes, and deliberately inert.",
-      role: "Product & engineering lead",
+      role: "Sole developer",
       period: "Jul 2026",
       team: "Solo build",
       status: "Sandboxed prototype",

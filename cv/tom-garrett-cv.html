@@ -2,374 +2,208 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>Tom Garrett — Technical Product Management</title>
+<title>Tom Garrett — Lead / Principal Developer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Libre+Franklin:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-  /* Print CV. Typography and palette follow the portfolio site: Archivo for
-     display, Libre Franklin for body, IBM Plex Mono for dates and figures.
-     Every font has a system fallback so the PDF still sets correctly if the
-     renderer has no network. */
+  /* Each experience bullet is prefixed with the kind of work it is, so the page
+     can be scanned by theme rather than read line by line. The case studies are
+     not here — they are four long documents living at the URL in the footer.
+     Typography follows the portfolio site so the pair reads as one set. */
 
-  @page { size: A4; margin: 11mm 13mm 10mm; }
+  @page { size: A4; margin: 11mm 12mm 8mm; }
 
   :root {
     --ink-950: #0B0D10;
-    --ink-700: #3A4048;
-    --ink-500: #565E68;
-    --ink-400: #79818B;
+    --ink-700: #363C43;
+    --ink-500: #545C65;
+    --ink-400: #7B838C;
     --rule:    #DCE0E5;
     --accent:  #0F5C4A;
   }
 
   * { box-sizing: border-box; }
-
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 
   body {
     margin: 0;
     font-family: "Libre Franklin", "Segoe UI", system-ui, -apple-system, sans-serif;
     font-size: 8.6pt;
-    line-height: 1.31;
+    line-height: 1.3;
     color: var(--ink-500);
     background: #fff;
   }
 
   strong { color: var(--ink-950); font-weight: 600; }
-  a { color: inherit; text-decoration: none; }
-
-  /* ── Header ─────────────────────────────────────────────────────────── */
-  header { margin-bottom: 11pt; }
 
   h1 {
     margin: 0;
     font-family: Archivo, "Segoe UI", system-ui, sans-serif;
-    font-size: 25pt;
+    font-size: 22pt;
     font-weight: 700;
-    letter-spacing: -0.025em;
+    letter-spacing: -.025em;
     line-height: 1;
     color: var(--ink-950);
   }
 
   .strapline {
-    margin: 5pt 0 0;
+    margin: 4pt 0 0;
     font-family: Archivo, "Segoe UI", system-ui, sans-serif;
-    font-size: 7.6pt;
+    font-size: 7.4pt;
     font-weight: 600;
-    letter-spacing: 0.155em;
+    letter-spacing: .15em;
     text-transform: uppercase;
     color: var(--accent);
   }
 
-  .contacts {
-    margin: 5pt 0 0;
-    font-size: 8.2pt;
-    color: var(--ink-400);
-  }
-  .contacts span { white-space: nowrap; }
-  .sep { padding: 0 4pt; color: #C3C9D0; }
+  .contacts { margin: 4pt 0 0; font-size: 8.3pt; color: var(--ink-400); }
+  .sep { padding: 0 3pt; color: #C3C9D0; }
 
-  .summary { margin: 7pt 0 0; font-size: 8.6pt; }
-
-  /* ── Section headings ───────────────────────────────────────────────── */
   h2 {
-    margin: 11pt 0 0;
-    padding-bottom: 3pt;
-    border-bottom: 0.75pt solid var(--rule);
+    margin: 7pt 0 3pt;
+    padding-bottom: 2.5pt;
+    border-bottom: .75pt solid var(--rule);
     font-family: Archivo, "Segoe UI", system-ui, sans-serif;
-    font-size: 7.6pt;
+    font-size: 7.4pt;
     font-weight: 600;
-    letter-spacing: 0.145em;
+    letter-spacing: .14em;
     text-transform: uppercase;
     color: var(--accent);
   }
 
-  /* ── Lists ──────────────────────────────────────────────────────────── */
-  ul { margin: 5pt 0 0; padding: 0; list-style: none; }
-  li { position: relative; padding-left: 9pt; margin-top: 3pt; }
-  li::before {
-    content: "–";
-    position: absolute;
-    left: 0;
-    color: var(--ink-400);
-  }
-  li:first-child { margin-top: 0; }
+  .summary { margin: 0; }
 
-  /* ── Experience ─────────────────────────────────────────────────────── */
-  .role { margin-top: 6.5pt; break-inside: avoid; }
-  .role:first-of-type { margin-top: 6pt; }
-
-  .org-line, .title-line {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 10pt;
-  }
-
+  /* Organisation left, the work itself right. */
+  .rows { display: grid; gap: 4.5pt; }
+  .row { display: grid; grid-template-columns: 124pt 1fr; gap: 12pt; break-inside: avoid; }
   .org {
     font-family: Archivo, "Segoe UI", system-ui, sans-serif;
-    font-size: 11.5pt;
+    font-size: 9.3pt;
     font-weight: 600;
-    letter-spacing: -0.01em;
     color: var(--ink-950);
+    line-height: 1.28;
   }
-
-  .meta {
+  .org span {
+    display: block;
     font-family: "IBM Plex Mono", Consolas, monospace;
-    font-size: 7.4pt;
-    letter-spacing: 0.06em;
+    font-size: 6.8pt;
+    font-weight: 400;
+    letter-spacing: .03em;
     text-transform: uppercase;
     color: var(--ink-400);
-    white-space: nowrap;
+    margin-top: 1.5pt;
+  }
+  .role {
+    margin: 0 0 2.5pt;
+    font-size: 8.9pt;
+    font-weight: 500;
+    color: var(--ink-700);
   }
 
-  .note { margin: 2pt 0 0; font-size: 8.2pt; font-style: italic; color: var(--ink-400); }
+  ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 2.2pt; }
+  li { position: relative; padding-left: 8.5pt; }
+  li::before { content: "–"; position: absolute; left: 0; color: var(--ink-400); }
+  li b { color: var(--ink-950); font-weight: 600; }
 
-  .title-line { margin-top: 5pt; }
-  .title { font-size: 9.4pt; font-weight: 600; color: var(--ink-950); }
-  .dates {
+  .flat { margin: 0; }
+
+  .foot {
+    margin: 5pt 0 0;
+    padding-top: 3.5pt;
+    border-top: .75pt solid var(--rule);
     font-family: "IBM Plex Mono", Consolas, monospace;
-    font-size: 7.8pt;
-    color: var(--ink-400);
-    white-space: nowrap;
-  }
-  .title-line + .title-line { margin-top: 2pt; }
-  .title-line + ul { margin-top: 4pt; }
-
-  /* ── Case studies ───────────────────────────────────────────────────── */
-  /* The URL sits under the heading rather than inside it: the headings are
-     uppercase and widely letter-spaced, and a full repository path set that way
-     runs past the measure. */
-  .section-note {
-    margin: 3pt 0 0;
-    font-family: "IBM Plex Mono", Consolas, monospace;
-    font-size: 7.4pt;
-    color: var(--ink-400);
-  }
-  .section-note a { color: var(--accent); }
-
-  .study { margin-top: 5pt; break-inside: avoid; }
-  .study:first-of-type { margin-top: 6pt; }
-  .study-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10pt; }
-  .study-name { font-size: 9.6pt; font-weight: 600; color: var(--ink-950); }
-  .study-body { margin: 1.5pt 0 0; }
-  .figures {
-    margin: 2pt 0 0;
-    font-family: "IBM Plex Mono", Consolas, monospace;
-    font-size: 7.6pt;
-    color: var(--ink-400);
-  }
-  .figures b { color: var(--ink-700); font-weight: 500; }
-
-  /* ── Two-column tail ────────────────────────────────────────────────── */
-  .tail { display: flex; gap: 16pt; }
-  .tail > div { flex: 1; }
-
-  .refs {
-    margin-top: 7pt;
-    padding-top: 5pt;
-    border-top: 0.75pt solid var(--rule);
-    font-family: "IBM Plex Mono", Consolas, monospace;
-    font-size: 7.4pt;
-    letter-spacing: 0.06em;
+    font-size: 7pt;
+    letter-spacing: .03em;
     color: var(--ink-400);
     text-align: center;
   }
+  .foot b { color: var(--ink-700); font-weight: 500; }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>Tom Garrett</h1>
-  <p class="strapline">Technical Product Management · Platform Ecosystems &amp; Architecture</p>
-  <p class="contacts">
-    <span>tgarrett.92@icloud.com</span><span class="sep">·</span><span>linkedin.com/in/thomasgarrett-digital</span><span class="sep">·</span><span>tomg926.github.io/Tom-Garrett-Technical-Product-Management</span><span class="sep">·</span><span>Dublin, Ireland</span>
-  </p>
-</header>
+<h1>Tom Garrett</h1>
+<p class="strapline">Lead / Principal Developer · Platform Architecture, Integrations &amp; AI</p>
+<p class="contacts">tgarrett.92@icloud.com<span class="sep">·</span>github.com/TomG926<span class="sep">·</span>linkedin.com/in/thomasgarrett-digital<span class="sep">·</span>Dublin, Ireland<span class="sep">·</span>NFQ Level 8, Computer Software Engineering (1.1)</p>
 
+<h2>Professional Summary</h2>
 <p class="summary">
-  Technical product leader with ten years across software architecture, UX and platform ownership, working from an
-  engineering background I still use daily. I own the roadmap for a <strong>multi-tenant B2B SaaS platform serving
-  250,000+ customers</strong> across three applications, and I took its communications layer from problem definition
-  to production on <strong>Twilio Programmable Voice</strong> — a browser-based, nine-language contact centre now
-  carrying <strong>~5,000 calls a month</strong>. I design the <strong>API contracts and event-driven integrations</strong>
-  that unlock enterprise accounts, and I write code alongside the roadmap, so architectural trade-offs get made
-  with engineering rather than handed to it.
+  Developer of ten years, currently serving as Director of Engineering. I own the architecture
+  across three applications on a regulated <strong>multi-tenant Rails platform serving 250,000+
+  customers</strong> and lead eight engineers. Most recently shipped a <strong>real-time telephony
+  platform</strong> on Twilio and Redis, and <strong>two production AI pipelines</strong> on the
+  Anthropic SDK, solo. I design for the failure modes rather than the happy path.
 </p>
 
-<h2>Product &amp; Technical Skillset</h2>
-<ul>
-  <li><strong>APIs, platforms &amp; integrations</strong> — API contract design, bi-directional sync, webhook idempotency and replay, SDK and developer experience, third-party platform APIs</li>
-  <li><strong>Communications &amp; event-driven systems</strong> — Twilio Programmable Voice (conferences, Voice SDK, status callbacks), HubSpot and Salesforce CRM integration, WebSockets, Redis-backed state, queue-driven pipelines</li>
-  <li><strong>Data-heavy products</strong> — ingestion pipelines (open banking, document AI), analytics instrumentation, feature flags (Flipper), reporting and cohort analysis at 250k+ customer scale</li>
-  <li><strong>Discovery &amp; validation</strong> — customer interviews and remote feedback sessions, discovery and feature-planning workshops, UX prototyping, Hotjar/session analysis, data-led feature kill/scale decisions</li>
-  <li><strong>Delivery &amp; cross-functional leadership</strong> — Agile planning, multi-phase initiative scoping, cross-timezone execution, leading engineering, design and operations without formal authority</li>
-  <li><strong>Engineering fluency</strong> — Ruby on Rails, React, Node, SQL/PostgreSQL, GCP/AWS, Docker, CI/CD, system architecture; SOC 2 Type I in a regulated US FinTech/PropTech domain</li>
-</ul>
-
 <h2>Experience</h2>
+<div class="rows">
+  <div class="row">
+    <div class="org">DepositCloud<span>Dublin, Ireland (US market)</span></div>
+    <div>
+      <p class="role">Director of Engineering · Jun 2024 – Present</p>
+      <ul>
+        <li><b>Platform architecture.</b> Own the architecture across three applications supporting 250k+ customers on multi-tenant Rails. <strong>900+ merged PRs and 47 schema migrations</strong> against live production over 24 months.</li>
+        <li><b>Real-time telephony.</b> Built a Twilio-backed contact centre 0→1, launching production calls within three months and scaling to <strong>~5,000 calls a month</strong>. Nine-language IVR with row-locked routing for atomic check-and-claim, and Redis presence alongside PostgreSQL.</li>
+        <li><b>Resiliency &amp; webhooks.</b> Developed <strong>28 webhook endpoints</strong> made strictly idempotent, with compensation logic on failed conference dials — removing <strong>100% of third-party telephony licensing costs</strong>.</li>
+        <li><b>Enterprise integrations.</b> Built a bi-directional HubSpot CRM sync and a greenfield PMS Sync product. Engineered API contracts with Yardi, Entrata, RealPage and Rent Manager to unlock enterprise-tier accounts, alongside core integrations for Stripe and Salesforce.</li>
+        <li><b>Engineering leadership &amp; DevSecOps.</b> Cut the release cycle <strong>from two weeks to under four hours</strong> (Docker, GitHub Actions) and drove <strong>SOC 2 Type I</strong> with automated scanning and penetration testing in CI. Lead eight engineers plus design and operations, setting the standards the team builds to.</li>
+      </ul>
+    </div>
+  </div>
 
-<div class="role">
-  <div class="org-line">
-    <span class="org">DepositCloud</span>
-    <span class="meta">Ireland (US market)</span>
+  <div class="row">
+    <div class="org">Independent Developer<span>Dublin, Ireland</span></div>
+    <div>
+      <p class="role">Side Venture / Technical Adviser · 2024 – Present</p>
+      <ul>
+        <li>Built a wealth-management platform solo in <strong>Rails 8</strong>, currently in production with <strong>100+ active clients</strong>.</li>
+        <li>Implemented TrueLayer open banking and GPT-4o vision extraction into a 22-table data model, rebuilding unit test coverage from <strong>31.9% to 91.6%</strong> (1,097 tests).</li>
+        <li>Act as an active technical adviser to an Enterprise Ireland High Potential Start-Up (HPSU).</li>
+      </ul>
+    </div>
   </div>
-  <p class="note">Multi-tenant Rails SaaS managing the full US rental security-deposit lifecycle for property management companies and multifamily operators.</p>
-  <div class="title-line">
-    <span class="title">Technical Product &amp; Engineering Director</span>
-    <span class="dates">Aug 2025 – Present</span>
-  </div>
-  <div class="title-line">
-    <span class="title">Lead Technical Product Engineer</span>
-    <span class="dates">Jun 2024 – Aug 2025</span>
-  </div>
-  <ul>
-    <li>Own the product roadmap across <strong>three applications serving 250k+ customers</strong> (85k+ active accounts, 160k+ enrollments onboarding), aligning a distributed team of <strong>8 engineers</strong> plus design and operations on priorities and release cycles — influence rather than reporting lines.</li>
-    <li><strong>Twilio contact centre, 0→1: production calls inside three months</strong>, then fifteen months of continuous delivery. Defined the problem, designed the architecture and shipped a browser-based contact centre on <strong>Twilio Programmable Voice</strong> — nine-language IVR, language-aware round-robin routing, and a two-party conference per call so warm transfer, hold and supervisor barge became participant operations rather than teardowns. Now carries <strong>~5,000 calls a month</strong> across <strong>28 webhook and agent-action endpoints</strong>, cut average handling time, and eliminated <strong>100% of third-party vendor licensing costs</strong>.</li>
-    <li>Extended that platform into the commercial stack with a <strong>bi-directional HubSpot CRM integration</strong>: call events log activity and contacts against the customer record, tickets are raised from the call itself, and both systems stay in sync — so a support conversation and the account it belongs to are never two separate records.</li>
-    <li>Hardened the platform against the failure modes of a <strong>distributed, event-driven telephony system</strong> — carrier rejections, duplicate and out-of-order webhooks, and agent availability split between PostgreSQL and Redis — specifying idempotent handlers and explicit compensation that rolls agent state back when a conference dial fails. A written incident review converted a class of silent failures into visible, recoverable ones.</li>
-    <li>Owned the greenfield <strong>PMS Sync &amp; Integration product</strong> end to end, designing <strong>bi-directional API contracts</strong> with Yardi, Entrata, RealPage and Rent Manager — the integrations that unlock enterprise-tier property-management accounts — plus Stripe and Salesforce across the wider platform.</li>
-    <li>Made <strong>feature flags tied to analytics</strong> (Flipper) the standard launch mechanism, with success metrics agreed before rollout, so features are scaled or killed on production evidence instead of opinion.</li>
-    <li>Run <strong>remote discovery and feedback sessions directly with US clients</strong>, turning the operational pain points they describe into the contact-centre and sync roadmaps; partnered with leadership to translate strategic objectives into <strong>rapid prototypes validated against production data</strong> before full rollout.</li>
-    <li>Cut release cycle <strong>from two weeks to under four hours</strong> by re-engineering CI/CD (Docker, GitHub Actions), and sustained <strong>900+ merged PRs and 18–25 multi-phase initiatives over 24 months</strong> — including <strong>47 schema migrations against a live product</strong>.</li>
-    <li>Treated security as a product requirement, embedding <strong>SOC 2 Type I compliance</strong>, automated penetration testing and vulnerability mitigation directly into the roadmap.</li>
-  </ul>
-</div>
 
-<div class="role">
-  <div class="org-line">
-    <span class="org">Product Consultant &amp; Adviser</span>
-    <span class="meta">2024 – Present</span>
+  <div class="row">
+    <div class="org">DocuDynamics<span>Dublin, Ireland</span></div>
+    <div>
+      <p class="role">Founder &amp; Lead Engineer · Nov 2022 – Jun 2024</p>
+      <ul>
+        <li>Launched a compliance-automation startup, moving from <strong>concept to funded MVP in five months</strong> solo using React, Node and AWS. Backed by Microsoft for Startups and New Frontiers Phase 2.</li>
+        <li>Owned the document upload → AI processing → collaboration pipeline, iteratively mitigating friction points derived from 20+ comprehensive user interviews.</li>
+      </ul>
+    </div>
   </div>
-  <p class="note">Advisory and hands-on product engineering for early-stage Irish companies.</p>
-  <ul>
-    <li><strong>Guest Nutrition</strong> (2024 – present) — product adviser to an Enterprise Ireland High Potential Start-Up (HPSU); run <strong>product discovery and technical feature-planning workshops</strong> that set the roadmap, and guided the product from <strong>0 to 1</strong> into active industry field trials.</li>
-    <li><strong>WealthGuard</strong> (2025 – present) — scoped the product specification and built a robust wealth-management application in Ruby on Rails, now in active production use by <strong>100+ high-net-worth clients</strong>.</li>
-  </ul>
-</div>
 
-<div class="role">
-  <div class="org-line">
-    <span class="org">DocuDynamics — Founder</span>
-    <span class="meta">Nov 2022 – Jun 2024</span>
+  <div class="row">
+    <div class="org">Penco<span>Dublin, Ireland</span></div>
+    <div>
+      <p class="role">Developer &amp; Digital Operations Manager · Dec 2019 – Nov 2022</p>
+      <ul>
+        <li>Shipped web and mobile features on a custom mortgage application and appraisal platform in two-week iterations.</li>
+        <li>Integrated Salesforce to eliminate <strong>60% of manual data entry</strong>, boosting operational capacity by <strong>40%</strong>.</li>
+      </ul>
+    </div>
   </div>
-  <p class="note">Compliance-automation startup. End-to-end product development, from customer discovery to production code.</p>
-  <ul>
-    <li>Designed and launched the entire <strong>v1 web application from concept to funded MVP in five months</strong> (React, Node, AWS), securing <strong>Microsoft for Startups</strong> and <strong>New Frontiers Phase 2</strong> backing.</li>
-    <li>Mapped the critical user workflows — <strong>document upload → AI pipeline → collaboration</strong> — and continuously optimised systemic friction points through <strong>20+ user interviews</strong> and direct observation.</li>
-    <li>Cultivated a culture of disciplined experimentation, using real-time production analytics to <strong>kill low-engagement features</strong> and scale high-value workflows.</li>
-  </ul>
-</div>
 
-<div class="role">
-  <div class="org-line">
-    <span class="org">Penco — Digital Operations Manager</span>
-    <span class="meta">Dec 2019 – Nov 2022</span>
-  </div>
-  <ul>
-    <li>Ran <strong>continuous user interviews with mortgage clients</strong> on a custom-built <strong>mortgage application and appraisal platform</strong> — streamlining the application journey, identifying the pain points that set the backlog, and testing new features with the people who used them.</li>
-    <li>Managed end-to-end delivery of web and mobile features, aligning that research with sprint goals to ship production-ready work inside <strong>two-week iterations</strong>.</li>
-    <li>Designed a custom <strong>Salesforce CRM integration</strong> strategy that eliminated <strong>60% of manual data entry</strong> and increased operational capacity by <strong>40%</strong>.</li>
-    <li>Embedded rapid product validation frameworks by introducing <strong>Hotjar</strong> for user testing, cutting feature evaluation lifecycles by <strong>70%</strong>.</li>
-    <li>Featured in <strong>The Sunday Times</strong> (Business, Jul 2020) on leadership in helping Irish SMEs build data-driven operations.</li>
-  </ul>
-</div>
-
-<div class="role">
-  <div class="org-line">
-    <span class="org">Earlier roles</span>
-    <span class="meta">2016 – 2019</span>
-  </div>
-  <ul>
-    <li><strong>Full Stack Developer</strong>, Gambling.com Group, Dublin (Jan – Dec 2019) — build and <strong>user testing for a US-market gambling comparison iOS app</strong>.</li>
-    <li><strong>User Experience Designer</strong>, GRID Finance, Dublin (Jan 2018 – Jan 2019) — journey mapping and application interfaces for an SME lending engine.</li>
-    <li><strong>Multimedia Designer</strong>, Associated Newspapers (Jun 2017 – Jun 2018) · Cauldron Recording Studios (Jun – Sep 2016), Dublin.</li>
-  </ul>
-</div>
-
-<h2>Selected Case Studies</h2>
-<p class="section-note">Written up in full at
-  <a href="https://tomg926.github.io/Tom-Garrett-Technical-Product-Management/">tomg926.github.io/Tom-Garrett-Technical-Product-Management</a></p>
-
-<div class="study">
-  <div class="study-head">
-    <span class="study-name">Multilingual Contact Centre</span>
-    <span class="meta">Voice infrastructure · Dec 2024 – Jun 2026</span>
-  </div>
-  <p class="study-body">
-    Product and delivery lead across 7 contributors, working directly with engineering on the data model, the
-    conference and routing services, and the Twilio Voice SDK in the browser. Routing is row-locked so two callers
-    can never be handed the same agent; the supervisor console deliberately surfaces online, available-in-database
-    and available-in-Redis as three separate indicators, because in production those three disagree.
-  </p>
-  <p class="figures"><b>~5,000</b> calls a month &nbsp;·&nbsp; <b>9</b> languages in the IVR &nbsp;·&nbsp; <b>28</b> webhook and agent-action endpoints &nbsp;·&nbsp; <b>47</b> schema migrations against a live product</p>
-</div>
-
-<div class="study">
-  <div class="study-head">
-    <span class="study-name">AI-Assisted High-Net Wealth Dashboard</span>
-    <span class="meta">Personal wealth platform · Oct 2025 – Aug 2026</span>
-  </div>
-  <p class="study-body">
-    Two ingestion paths into a 22-table domain model — TrueLayer open banking for accounts and transactions, GPT-4o
-    vision for pension and mortgage statements — feeding a retirement engine built for Irish rules. 0→1 from problem
-    definition to production use by 100+ clients; the closing stretch was a test-suite rebuild that surfaced a bank
-    integration which had never once produced a record.
-  </p>
-  <p class="figures"><b>22</b> domain tables &nbsp;·&nbsp; <b>24</b> screens, member and adviser &nbsp;·&nbsp; test-suite rebuild from <b>31.9%</b> to <b>91.6%</b> line coverage across <b>1,097</b> tests</p>
-</div>
-
-<div class="study">
-  <div class="study-head">
-    <span class="study-name">Self-Updating AI Legal Knowledge Base</span>
-    <span class="meta">AI legal intelligence · Jun – Aug 2026</span>
-  </div>
-  <p class="study-body">
-    A knowledge base of US deposit law that keeps itself current and never writes to itself. Three Claude agents
-    research the live web, adversarially fact-check each other, then emit schema-valid proposals a human reviewer
-    accepts, edits or declines. The final stage is tool-free and schema-bound: fourteen required fields, enums tied
-    to the application's own vocabularies.
-  </p>
-  <p class="figures"><b>3</b> agents per run &nbsp;·&nbsp; <b>51</b> US jurisdictions &nbsp;·&nbsp; <b>106</b> seeded articles &nbsp;·&nbsp; <b>128K</b> streamed output tokens per stage</p>
-</div>
-
-<div class="study">
-  <div class="study-head">
-    <span class="study-name">Human-Gated AI Move-Out Pipeline</span>
-    <span class="meta">Workflow automation prototype · Jul 2026</span>
-  </div>
-  <p class="study-body">
-    A four-stage pipeline that works a move-out end to end, then stops — because the next step moves someone's
-    deposit. Model tiers chosen by what kind of mistake each stage can make. Pointed at a real property-management
-    export, it revealed the data model assumed gross figures where the document supplies an already-netted ledger:
-    the finding that justified building it.
-  </p>
-  <p class="figures"><b>4</b> agents in the pipeline &nbsp;·&nbsp; <b>2</b> model tiers, by cost of error &nbsp;·&nbsp; <b>~$0.10</b> estimated cost per statement</p>
-</div>
-
-<div class="tail">
-  <div>
-    <h2>Education &amp; Further Study</h2>
-    <ul>
-      <li><strong>Professional Academy Diploma, Advanced Artificial Intelligence for Business</strong> — UCD Professional Academy. Jul – Nov 2026, in progress.</li>
-      <li><strong>Computer Software Engineering</strong> — Dublin City University, NFQ Level 8. Sep 2020 – Jun 2021, first-class honours (1.1).</li>
-      <li><strong>BA (Hons), Digital Art</strong> — IADT Dún Laoghaire, NFQ Level 8. 2013 – 2017, second-class honours (2.1).</li>
-      <li><strong>New Frontiers, Phase 2</strong> — Enterprise Ireland, TU Dublin. Oct 2022 – Mar 2023.</li>
-      <li><strong>Professional Diploma, Digital Marketing</strong> — Waterford Institute of Technology. 2018 – 2019.</li>
-    </ul>
-  </div>
-  <div>
-    <h2>Recognition</h2>
-    <ul>
-      <li><strong>New Frontiers Phase 2</strong> recipient — TU Dublin.</li>
-      <li><strong>Microsoft for Startups</strong> portfolio — DocuDynamics.</li>
-      <li><strong>The Sunday Times</strong>, Business section, July 2020 — on how Irish SMEs can become data-driven.</li>
-    </ul>
+  <div class="row">
+    <div class="org">Earlier Experience<span>Dublin, Ireland</span></div>
+    <div>
+      <p class="role">Full Stack &amp; Multimedia Roles · 2016 – 2019</p>
+      <ul>
+        <li><b>Gambling.com Group</b> — Full Stack Developer. Built and user-tested a US-market comparison iOS application.</li>
+        <li><b>GRID Finance</b> — UX Engineer. Developed frontend systems for an SME lending platform.</li>
+        <li><b>Associated Newspapers / Cauldron Studios</b> — Multimedia Developer &amp; Audio Engineer.</li>
+      </ul>
+    </div>
   </div>
 </div>
 
-<p class="refs">References available on request</p>
+<h2>Technical Skills</h2>
+<p class="flat"><strong>Build stack</strong> — Ruby on Rails, JavaScript, React, Node, Hotwire, SQL, Tailwind CSS. <strong>Infrastructure</strong> — PostgreSQL, Redis, Solid Queue, Docker, GitHub Actions, Google Cloud Run, Cloud SQL, AWS. <strong>Systems architecture</strong> — Event-driven integrations, webhook idempotency and replay systems, row-level locking, WebSockets over Redis pub/sub, retry and compensation design, live database migrations. <strong>AI engineering</strong> — Anthropic SDK (structured outputs, tool budgets, streaming, prompt caching, model tiering), GPT-4o vision extraction, human-in-the-loop review gates, Claude Code.</p>
+
+<h2>Education &amp; Recognition</h2>
+<p class="flat"><strong>MSc Computer Science (OMSCS)</strong> — Georgia Tech, online part-time, in progress · <strong>Advanced AI for Business</strong> — UCD, 2026, in progress · <strong>HDip Computer Software Engineering</strong> — DCU, NFQ Level 8, first-class honours (1.1), 2021 · <strong>Diploma, Digital Marketing</strong> — WIT, 2019 · <strong>BA (Hons) Digital Art</strong> — IADT, 2.1, 2017 · <strong>Awards</strong> — New Frontiers Phase 2, Microsoft for Startups, The Sunday Times (Business, Jul 2020). <strong>Case studies</strong> — tomg926.github.io/Tom-Garrett-Technical-Product-Management</p>
 
 </body>
 </html>

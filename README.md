@@ -1,6 +1,6 @@
-# Tom Garrett — Technical Product Management
+# Tom Garrett — Lead / Principal Developer
 
-Portfolio site and four long-form product case studies. Rails 8 renders it; it
+Portfolio site and four long-form engineering case studies. Rails 8 renders it; it
 deploys as flat HTML to GitHub Pages.
 
 **Live:** https://tomg926.github.io/Tom-Garrett-Technical-Product-Management/

@@ -35,8 +35,11 @@
         <% end %>
       </dl>
 
-      <div class="mt-6 flex items-center gap-4">
-        <span class="inline-flex items-center gap-2 text-[0.88rem] font-medium text-ink-950">
+      <%# Styled as a button but left as a span: the title link already covers the
+          whole card via ::after, so a second anchor here would duplicate the target
+          and give screen readers two links to the same study. %>
+      <div class="mt-6 flex flex-wrap items-center gap-4">
+        <span class="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-paper px-4 py-2 text-[0.88rem] font-medium text-ink-950 transition duration-300 group-hover:border-ink-950 group-hover:bg-ink-950 group-hover:text-paper">
           Read the case study
           <svg class="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
             <path d="M4 10h11m0 0-4-4m4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/>

@@ -2,13 +2,12 @@ module ApplicationHelper
   # Contact details, in one place so the footer, home page and about page agree.
   CONTACT = {
     name: "Tom Garrett",
-    role: "Technical Product Management",
-    strapline: "Platform ecosystems & architecture",
-    email: "tgarrett.92@icloud.com",
+    role: "Lead / Principal Developer",
+    strapline: "Platform architecture, integrations & AI",
     linkedin: "https://linkedin.com/in/thomasgarrett-digital",
     linkedin_label: "linkedin.com/in/thomasgarrett-digital",
-    site: "https://tomg926.github.io/Tom-Garrett-Technical-Product-Management/",
-    site_label: "tomg926.github.io/Tom-Garrett-Technical-Product-Management",
+    github: "https://github.com/TomG926",
+    github_label: "github.com/TomG926",
     location: "Dublin, Ireland",
     cv: "/tom-garrett-cv.pdf"
   }.freeze

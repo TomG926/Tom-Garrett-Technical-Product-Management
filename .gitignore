@@ -48,3 +48,11 @@
 /_site
 
 .DS_Store
+
+# Job-application material. The repo is public — it serves the site at
+# tomg926.github.io — so cover letters and CVs cut for a named employer stay
+# local. The general CV is tracked as HTML here and shipped as
+# public/tom-garrett-cv.pdf; every other PDF in cv/ is a render artefact.
+/cv/cover-letter*
+/cv/tom-garrett-cv-*
+/cv/*.pdf

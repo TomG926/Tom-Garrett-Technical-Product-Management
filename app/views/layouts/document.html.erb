@@ -6,6 +6,7 @@
     it takes. %>
 <html lang="en" data-theme="light">
   <head>
+    <meta charset="utf-8">
     <title><%= content_for(:title) %> · Tom Garrett</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="description" content="<%= content_for(:description) %>">
@@ -109,7 +110,7 @@
           <span class="cs-muted"> · </span>
           <a href="<%= contact[:cv] %>" download>CV</a>
           <span class="cs-muted"> · </span>
-          <a href="mailto:<%= contact[:email] %>">Email</a>
+          <a href="<%= contact[:github] %>" rel="noopener">GitHub</a>
         </div>
       </div>
     </div>
