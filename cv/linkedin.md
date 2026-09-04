@@ -51,39 +51,21 @@ https://tomg926.github.io/Tom-Garrett-Technical-Product-Management/
 ## Experience
 
 ### DepositCloud — Director of Engineering
-Jul 2026 – Present · Dublin, Ireland (US market)
+Jun 2024 – Present · Dublin, Ireland (US market)
 
 Multi-tenant Rails SaaS for the full US rental security-deposit lifecycle.
 
-• Own the architecture across three applications serving 250k+ customers (85k+ active accounts, 160k+ enrollments) on multi-tenant Rails, and lead 8 distributed engineers plus design and operations.
-
-• Set the engineering standards the team builds to: architecture reviews, release rules, feature flags tied to analytics on every significant release, and written post-incident reviews.
-
-• Drove SOC 2 Type I with automated scanning and penetration testing wired into CI.
-
-• Run remote sessions directly with US clients, turning recurring technical problems into architecture decisions.
-
-### DepositCloud — Lead Software Engineer
-Aug 2025 – Jul 2026 · Dublin, Ireland (US market)
+• Own the architecture across three applications serving 250k+ customers (85k+ active accounts, 160k+ enrollments) on multi-tenant Rails, and lead 8 distributed engineers plus design and operations — 900+ merged PRs and 47 schema migrations against a live product.
 
 • Twilio contact centre, 0→1: production calls inside three months, then fifteen months of continuous delivery. Browser-based: nine-language IVR, language-aware round-robin routing, and a two-party conference per call so warm transfer, hold and supervisor barge are participant operations, not teardowns. Carries ~5,000 calls a month across 28 webhook and agent-action endpoints, and eliminated 100% of third-party vendor licensing costs.
 
-• Bi-directional HubSpot CRM integration on top of it: call events log activity and contacts against the customer record, tickets are raised from the call itself, and both systems stay in sync.
-
 • Hardened it against distributed, event-driven failure modes — carrier rejections, duplicate and out-of-order webhooks, agent availability split between PostgreSQL and Redis — with idempotent handlers and compensation that rolls agent state back on a failed conference dial.
 
-• Built the greenfield PMS Sync & Integration product end to end: bi-directional API contracts with Yardi, Entrata, RealPage and Rent Manager, the integrations that unlock enterprise-tier accounts, plus Stripe and Salesforce.
+• Built a bi-directional HubSpot CRM integration on top of it, and the greenfield PMS Sync & Integration product end to end: API contracts with Yardi, Entrata, RealPage and Rent Manager, the integrations that unlock enterprise-tier accounts, plus Stripe and Salesforce.
 
-• Cut release cycle from two weeks to under four hours (Docker, GitHub Actions). 900+ merged PRs and 47 schema migrations against a live product across the period.
+• Cut the release cycle from two weeks to under four hours (Docker, GitHub Actions) and drove SOC 2 Type I with automated scanning and penetration testing wired into CI.
 
-### DepositCloud — Senior Software Engineer
-Jun 2024 – Aug 2025 · Dublin, Ireland (US market)
-
-• Set the engineering foundations the later roles run on: release standards across three applications, feature flags tied to analytics as the standard launch path, and CI/CD re-engineered from a two-week cycle to under four hours.
-
-• Led the build of the Twilio Programmable Voice contact centre from first working call path through transfer logic, voicemail, recording and the supervisor console.
-
-• Designed the data model and API contracts behind the call model — 13 core domain tables, 28 telephony and agent-action endpoints.
+• Set the engineering standards the team builds to: architecture reviews, feature flags tied to analytics on every significant release, written post-incident reviews. Run remote sessions directly with US clients, turning recurring technical problems into architecture decisions.
 
 ### Independent Developer & Adviser
 2024 – Present · Dublin, Ireland
